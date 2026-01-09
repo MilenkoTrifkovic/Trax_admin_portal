@@ -17,6 +17,7 @@ enum AppRoute {
   superAdmin('/super-admin'),
   superAdminEvents('/super-admin-events'),
   superAdminEventDetails('/super-admin-event-details/:eventId', 'eventId'),
+  superAdminSalesPeople('/super-admin-sales-people'),
 
   /// 🔹 NEW: host menu set details
   hostMenuDetails('/host-menus/:menuId', 'menuId'),

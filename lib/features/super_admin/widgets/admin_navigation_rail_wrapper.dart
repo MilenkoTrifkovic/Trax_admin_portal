@@ -37,6 +37,7 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
 
   int _selectedIndexForLocation(String location) {
     if (location.startsWith(AppRoute.superAdminEvents.path)) return 0;
+    if (location.startsWith(AppRoute.superAdminSalesPeople.path)) return 1;
     return 0;
   }
 
@@ -47,6 +48,10 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
         pushAndRemoveAllRoute(AppRoute.superAdminEvents, context);
         return;
       case 1:
+        // Sales People
+        pushAndRemoveAllRoute(AppRoute.superAdminSalesPeople, context);
+        return;
+      case 2:
         // Logout
         try {
           await authController.logout();
@@ -123,6 +128,11 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
         label: 'Events',
         icon: Icons.event_outlined,
         selectedIcon: Icons.event,
+      ),
+      const NavItemData(
+        label: 'Sales People',
+        icon: Icons.people_outline,
+        selectedIcon: Icons.people,
       ),
       const NavItemData(
         label: 'Logout',

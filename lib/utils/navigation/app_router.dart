@@ -60,6 +60,7 @@ import 'package:trax_admin_portal/features/guest/guest_feed_page/view/guest_feed
 import 'package:trax_admin_portal/view/guest/widgets/guest_navigation_rail_wrapper.dart';
 import 'package:trax_admin_portal/features/super_admin/super_admin_events/view/super_admin_page.dart';
 import 'package:trax_admin_portal/features/super_admin/widgets/admin_navigation_rail_wrapper.dart';
+import 'package:trax_admin_portal/features/super_admin/sales_people_management/view/sales_people_management_page.dart';
 
 /// Router setup for the Traxx application.
 /// Currently implementing basic navigation structure with go_router.
@@ -513,6 +514,10 @@ GoRouter buildRouter() {
                 eventId: eventId,
               );
             },
+          ),
+          GoRoute(
+            path: AppRoute.superAdminSalesPeople.path,
+            builder: (context, state) => SalesPeopleManagementPage(),
           ),
           // Add more super admin routes here as needed
         ],
