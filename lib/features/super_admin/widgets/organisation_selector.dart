@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:trax_admin_portal/controller/auth_controller/auth_controller.dart';
+import 'package:trax_admin_portal/features/super_admin/controllers/organisation_list_controller.dart';
 import 'package:trax_admin_portal/models/organisation.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
+import 'package:trax_admin_portal/utils/enums/sort_type.dart';
+import 'package:trax_admin_portal/widgets/app_search_input_field.dart';
 
 /// Widget that displays all organizations for super admin to select from
 class OrganisationSelector extends StatelessWidget {
-  const OrganisationSelector({super.key});
+  OrganisationSelector({super.key});
+  
+  final OrganisationListController controller = Get.put(OrganisationListController());
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +48,68 @@ class OrganisationSelector extends StatelessWidget {
             ),
             const SizedBox(height: 40),
 
+            // Search and Sort Section
+            Obx(() {
+              final orgs = authController.organisations;
+              
+              if (orgs.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Row(
+                  children: [
+                    // Search Field
+                    Expanded(
+                      child: AppSearchInputField(
+                        hintText: 'Search organizations...',
+                        onChanged: controller.filterOrganisations,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    
+                    // Sort Button
+                    PopupMenuButton<SortType>(
+                      icon: const Icon(Icons.sort),
+                      tooltip: 'Sort organizations',
+                      onSelected: (sortType) {
+                        controller.sortOrganisations(sortType);
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: SortType.nameAZ,
+                          child: Row(
+                            children: [
+                              Icon(Icons.sort_by_alpha),
+                              SizedBox(width: 8),
+                              Text('Name (A-Z)'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: SortType.nameZA,
+                          child: Row(
+                            children: [
+                              Icon(Icons.sort_by_alpha),
+                              SizedBox(width: 8),
+                              Text('Name (Z-A)'),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }),
+
             // Organizations List
             Expanded(
               child: Obx(() {
-                final orgs = authController.organisations;
+                final orgs = controller.filteredOrganisations;
 
-                if (orgs.isEmpty) {
+                if (authController.organisations.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -61,6 +122,28 @@ class OrganisationSelector extends StatelessWidget {
                         const SizedBox(height: 16),
                         Text(
                           'No organizations found',
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                color: AppColors.textMuted,
+                              ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                if (orgs.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off,
+                          size: 48,
+                          color: AppColors.textMuted,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No organizations match your search',
                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                 color: AppColors.textMuted,
                               ),

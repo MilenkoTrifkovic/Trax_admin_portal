@@ -63,7 +63,7 @@ class SuperAdminPage extends StatelessWidget {
         );
       } else {
         // Show organization selector
-        return const OrganisationSelector();
+        return  OrganisationSelector();
       }
     });
   }
