@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:trax_admin_portal/helper/firestore_helper.dart';
 import 'package:trax_admin_portal/models/sales_person_model.dart';
 import 'package:uuid/uuid.dart';
@@ -24,12 +25,14 @@ class SalesPeopleManagementServices {
   /// 
   /// Generates a unique salesPersonId using UUID v4 if not provided.
   /// Uses the salesPersonId as the Firestore document ID for consistency.
+  /// Also creates a Firebase Auth account and sends password setup email.
   /// 
   /// Parameters:
   /// - [salesPerson]: The SalesPersonModel to create
   /// 
   /// Returns the created SalesPersonModel with generated IDs.
   /// Throws [FirebaseException] if the create operation fails.
+  /// Throws [FirebaseFunctionsException] if account creation fails.
   Future<SalesPersonModel> createSalesPerson(SalesPersonModel salesPerson) async {
     try {
       final uuid = Uuid();
@@ -43,9 +46,34 @@ class SalesPeopleManagementServices {
         salesPersonId: salesPersonId,
       );
 
-      // Use salesPersonId as Firestore document ID
+      // Step 1: Create Firestore document first
       final docRef = salesPeopleRef.doc(salesPersonId);
       await docRef.set(toCreate.toFirestoreCreate());
+      print('Sales person Firestore doc created: $salesPersonId');
+
+      // Step 2: Create Firebase Auth account and send password setup email
+      try {
+        final callable = FirebaseFunctions.instance.httpsCallable('createSalesPersonAccount');
+        final result = await callable.call({
+          'email': toCreate.email,
+          'name': toCreate.name,
+          'salesPersonId': salesPersonId,
+        });
+
+        print('Firebase Auth account created: ${result.data}');
+        
+        if (result.data['alreadyExists'] == true) {
+          print('User already existed, password reset email sent');
+        } else {
+          print('New user created, password setup email sent');
+        }
+      } on FirebaseFunctionsException catch (e) {
+        print('Warning: Failed to create auth account: ${e.message}');
+        // Don't throw here - Firestore doc is already created
+        // Admin can manually create auth account later or resend email
+        print('Sales person created in Firestore but auth account creation failed');
+        print('User will need to have auth account created manually');
+      }
 
       print('Sales person created successfully: $salesPersonId');
       return toCreate;
@@ -295,6 +323,44 @@ class SalesPeopleManagementServices {
       rethrow;
     } catch (e) {
       print('Unknown error restoring sales person: $e');
+      rethrow;
+    }
+  }
+
+  /// Resends the password setup email to a sales person.
+  /// 
+  /// This can be used if:
+  /// - Initial account creation failed
+  /// - User lost the original email
+  /// - User needs to reset their password
+  /// 
+  /// Parameters:
+  /// - [salesPerson]: The SalesPersonModel to send email to
+  /// 
+  /// Throws [FirebaseFunctionsException] if the operation fails.
+  Future<void> resendPasswordSetupEmail(SalesPersonModel salesPerson) async {
+    try {
+      if (salesPerson.email.isEmpty) {
+        throw Exception('Sales person email is required');
+      }
+
+      if (salesPerson.salesPersonId == null || salesPerson.salesPersonId!.isEmpty) {
+        throw Exception('Sales person ID is required');
+      }
+
+      final callable = FirebaseFunctions.instance.httpsCallable('createSalesPersonAccount');
+      final result = await callable.call({
+        'email': salesPerson.email,
+        'name': salesPerson.name,
+        'salesPersonId': salesPerson.salesPersonId!,
+      });
+
+      print('Password setup email sent: ${result.data}');
+    } on FirebaseFunctionsException catch (e) {
+      print('Error sending password setup email: ${e.message}');
+      rethrow;
+    } catch (e) {
+      print('Unknown error sending password setup email: $e');
       rethrow;
     }
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:trax_admin_portal/models/sales_person_model.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
+import 'package:trax_admin_portal/theme/app_font_weight.dart';
 
 /// Confirmation dialog for deleting a sales person
 class DeleteSalesPersonDialog extends StatelessWidget {
@@ -19,18 +19,17 @@ class DeleteSalesPersonDialog extends StatelessWidget {
     return AlertDialog(
       title: Text(
         'Delete Sales Person',
-        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        style: TextStyle(fontWeight: AppFontWeight.semiBold),
       ),
       content: Text(
         'Are you sure you want to delete ${salesPerson.name}? This action will mark them as disabled.',
-        style: GoogleFonts.poppins(),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
             'Cancel',
-            style: GoogleFonts.poppins(color: AppColors.textMuted),
+            style: TextStyle(color: AppColors.textMuted),
           ),
         ),
         ElevatedButton(
@@ -42,10 +41,7 @@ class DeleteSalesPersonDialog extends StatelessWidget {
             backgroundColor: Colors.red,
             foregroundColor: Colors.white,
           ),
-          child: Text(
-            'Delete',
-            style: GoogleFonts.poppins(),
-          ),
+          child: const Text('Delete'),
         ),
       ],
     );

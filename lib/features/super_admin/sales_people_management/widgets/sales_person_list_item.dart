@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:trax_admin_portal/helper/app_spacing.dart';
 import 'package:trax_admin_portal/models/sales_person_model.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
+import 'package:trax_admin_portal/theme/app_font_weight.dart';
 
 /// Single list item representing a sales person
 class SalesPersonListItem extends StatelessWidget {
   final SalesPersonModel salesPerson;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback? onResendEmail;
   
   const SalesPersonListItem({
     super.key,
     required this.salesPerson,
     required this.onEdit,
     required this.onDelete,
+    this.onResendEmail,
   });
 
   @override
@@ -22,7 +25,7 @@ class SalesPersonListItem extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: const Color(0xFFE5E7EB).withOpacity(0.5)),
+          bottom: BorderSide(color: AppColors.borderSubtle.withOpacity(0.5)),
         ),
       ),
       child: Row(
@@ -38,20 +41,20 @@ class SalesPersonListItem extends StatelessWidget {
                     salesPerson.name.isNotEmpty 
                         ? salesPerson.name[0].toUpperCase() 
                         : '?',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: AppFontWeight.semiBold,
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                AppSpacing.horizontalXs(context),
                 Expanded(
                   child: Text(
                     salesPerson.name,
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFF111827),
+                      fontWeight: AppFontWeight.medium,
+                      color: AppColors.primary,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -65,9 +68,9 @@ class SalesPersonListItem extends StatelessWidget {
             flex: 2,
             child: Text(
               salesPerson.email,
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 14,
-                color: const Color(0xFF6B7280),
+                color: AppColors.secondary,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -78,9 +81,9 @@ class SalesPersonListItem extends StatelessWidget {
             flex: 2,
             child: Text(
               _formatLocation(salesPerson),
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 14,
-                color: const Color(0xFF6B7280),
+                color: AppColors.secondary,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -136,9 +139,9 @@ class SalesPersonListItem extends StatelessWidget {
             : salesPerson.isActive 
                 ? 'Active' 
                 : 'Inactive',
-        style: GoogleFonts.poppins(
+        style: TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.w500,
+          fontWeight: AppFontWeight.medium,
           color: salesPerson.isDisabled 
               ? Colors.red.shade700
               : salesPerson.isActive

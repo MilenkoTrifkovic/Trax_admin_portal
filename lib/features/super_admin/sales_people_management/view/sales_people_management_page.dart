@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:trax_admin_portal/features/super_admin/sales_people_management/controllers/sales_people_management_controller.dart';
 import 'package:trax_admin_portal/features/super_admin/sales_people_management/widgets/delete_sales_person_dialog.dart';
 import 'package:trax_admin_portal/features/super_admin/sales_people_management/widgets/sales_people_empty_state.dart';
 import 'package:trax_admin_portal/features/super_admin/sales_people_management/widgets/sales_people_list.dart';
 import 'package:trax_admin_portal/features/super_admin/sales_people_management/widgets/sales_person_form_dialog.dart';
+import 'package:trax_admin_portal/helper/app_spacing.dart';
 import 'package:trax_admin_portal/models/sales_person_model.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
+import 'package:trax_admin_portal/theme/app_font_weight.dart';
+import 'package:trax_admin_portal/widgets/dialogs/dialogs.dart';
 
 /// Main page for managing sales people in the super admin panel
 class SalesPeopleManagementPage extends StatelessWidget {
@@ -32,16 +34,16 @@ class SalesPeopleManagementPage extends StatelessWidget {
                   children: [
                     Text(
                       'Sales People Management',
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF111827),
+                        fontWeight: AppFontWeight.bold,
+                        color: AppColors.primary,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    AppSpacing.verticalXs(context),
                     Text(
                       'Manage sales people and their assignments',
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontSize: 14,
                         color: AppColors.textMuted,
                       ),
@@ -86,6 +88,7 @@ class SalesPeopleManagementPage extends StatelessWidget {
                   salesPeople: controller.salesPeople,
                   onEdit: _showEditSalesPersonDialog,
                   onDelete: _showDeleteConfirmation,
+                  onResendEmail: _showResendEmailConfirmation,
                 );
               }),
             ),
@@ -138,6 +141,18 @@ class SalesPeopleManagementPage extends StatelessWidget {
           },
         );
       },
+    );
+  }
+  
+  /// Show resend email confirmation dialog
+  void _showResendEmailConfirmation(BuildContext context, SalesPersonModel salesPerson) {
+    Dialogs.showConfirmationDialog(
+      context,
+      'Send a password setup email to ${salesPerson.name} (${salesPerson.email})?',
+      () async {
+        await controller.resendPasswordSetupEmail(salesPerson);
+      },
+      title: 'Resend Password Setup Email',
     );
   }
 }

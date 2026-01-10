@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:trax_admin_portal/models/sales_person_model.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
+import 'package:trax_admin_portal/theme/app_font_weight.dart';
 import 'sales_person_list_item.dart';
 
 /// List widget displaying all sales people
@@ -9,12 +9,14 @@ class SalesPeopleList extends StatelessWidget {
   final List<SalesPersonModel> salesPeople;
   final Function(BuildContext, SalesPersonModel) onEdit;
   final Function(BuildContext, SalesPersonModel) onDelete;
+  final Function(BuildContext, SalesPersonModel)? onResendEmail;
   
   const SalesPeopleList({
     super.key,
     required this.salesPeople,
     required this.onEdit,
     required this.onDelete,
+    this.onResendEmail,
   });
 
   @override
@@ -23,7 +25,7 @@ class SalesPeopleList extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: AppColors.borderSubtle),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -47,6 +49,9 @@ class SalesPeopleList extends StatelessWidget {
                   salesPerson: salesPerson,
                   onEdit: () => onEdit(context, salesPerson),
                   onDelete: () => onDelete(context, salesPerson),
+                  onResendEmail: onResendEmail != null 
+                      ? () => onResendEmail!(context, salesPerson)
+                      : null,
                 );
               },
             ),
@@ -62,7 +67,7 @@ class SalesPeopleList extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: const Color(0xFFE5E7EB)),
+          bottom: BorderSide(color: AppColors.borderSubtle),
         ),
       ),
       child: Row(
@@ -71,9 +76,9 @@ class SalesPeopleList extends StatelessWidget {
             flex: 2,
             child: Text(
               'Name',
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
+                fontWeight: AppFontWeight.semiBold,
                 color: AppColors.textMuted,
               ),
             ),
@@ -82,9 +87,9 @@ class SalesPeopleList extends StatelessWidget {
             flex: 2,
             child: Text(
               'Email',
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
+                fontWeight: AppFontWeight.semiBold,
                 color: AppColors.textMuted,
               ),
             ),
@@ -93,9 +98,9 @@ class SalesPeopleList extends StatelessWidget {
             flex: 2,
             child: Text(
               'Location',
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
+                fontWeight: AppFontWeight.semiBold,
                 color: AppColors.textMuted,
               ),
             ),
@@ -104,9 +109,9 @@ class SalesPeopleList extends StatelessWidget {
             flex: 1,
             child: Text(
               'Status',
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
+                fontWeight: AppFontWeight.semiBold,
                 color: AppColors.textMuted,
               ),
             ),

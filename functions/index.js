@@ -15,3 +15,4 @@ export { submitDemographics } from "./submitDemographics.js";
 export { getSelectedMenuItemsForInvitation } from "./getSelectedMenuItemsForInvitation.js";
 export { submitMenuSelection } from "./submitMenuSelection.js";
 export { getEventAnalytics } from "./getEventAnalytics.js";
+export { createSalesPersonAccount } from "./createSalesPersonAccount.js";

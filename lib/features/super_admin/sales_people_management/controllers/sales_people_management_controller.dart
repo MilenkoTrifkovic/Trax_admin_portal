@@ -1,10 +1,12 @@
 import 'package:get/get.dart';
+import 'package:trax_admin_portal/controller/global_controllers/snackbar_message_controller.dart';
 import 'package:trax_admin_portal/models/sales_person_model.dart';
 import 'package:trax_admin_portal/services/sales_people_management_services.dart';
 
 /// Controller for managing sales people
 class SalesPeopleManagementController extends GetxController {
   final SalesPeopleManagementServices _salesPeopleServices = SalesPeopleManagementServices();
+  final SnackbarMessageController _snackbarController = Get.find<SnackbarMessageController>();
   
   var isLoading = false.obs;
   RxList<SalesPersonModel> salesPeople = <SalesPersonModel>[].obs;
@@ -24,11 +26,7 @@ class SalesPeopleManagementController extends GetxController {
       print('Loaded ${salesPeople.length} sales people');
     } catch (e) {
       print('Error loading sales people: $e');
-      Get.snackbar(
-        'Error',
-        'Failed to load sales people: $e',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      _snackbarController.showErrorMessage('Failed to load sales people');
     } finally {
       isLoading.value = false;
     }
@@ -45,18 +43,10 @@ class SalesPeopleManagementController extends GetxController {
       isLoading.value = true;
       final created = await _salesPeopleServices.createSalesPerson(salesPerson);
       salesPeople.add(created);
-      Get.snackbar(
-        'Success',
-        'Sales person added successfully',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      _snackbarController.showSuccessMessage('Sales person added successfully');
     } catch (e) {
       print('Error adding sales person: $e');
-      Get.snackbar(
-        'Error',
-        'Failed to add sales person: $e',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      _snackbarController.showErrorMessage('Failed to add sales person');
       rethrow;
     } finally {
       isLoading.value = false;
@@ -72,18 +62,10 @@ class SalesPeopleManagementController extends GetxController {
       if (index != -1) {
         salesPeople[index] = updated;
       }
-      Get.snackbar(
-        'Success',
-        'Sales person updated successfully',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      _snackbarController.showSuccessMessage('Sales person updated successfully');
     } catch (e) {
       print('Error updating sales person: $e');
-      Get.snackbar(
-        'Error',
-        'Failed to update sales person: $e',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      _snackbarController.showErrorMessage('Failed to update sales person');
       rethrow;
     } finally {
       isLoading.value = false;
@@ -96,18 +78,25 @@ class SalesPeopleManagementController extends GetxController {
       isLoading.value = true;
       await _salesPeopleServices.deleteSalesPerson(salesPersonId);
       salesPeople.removeWhere((p) => p.docId == salesPersonId);
-      Get.snackbar(
-        'Success',
-        'Sales person deleted successfully',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      _snackbarController.showSuccessMessage('Sales person deleted successfully');
     } catch (e) {
       print('Error deleting sales person: $e');
-      Get.snackbar(
-        'Error',
-        'Failed to delete sales person: $e',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      _snackbarController.showErrorMessage('Failed to delete sales person');
+      rethrow;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Resend password setup email to a sales person
+  Future<void> resendPasswordSetupEmail(SalesPersonModel salesPerson) async {
+    try {
+      isLoading.value = true;
+      await _salesPeopleServices.resendPasswordSetupEmail(salesPerson);
+      _snackbarController.showSuccessMessage('Password setup email sent to ${salesPerson.email}');
+    } catch (e) {
+      print('Error sending password setup email: $e');
+      _snackbarController.showErrorMessage('Failed to send password setup email');
       rethrow;
     } finally {
       isLoading.value = false;

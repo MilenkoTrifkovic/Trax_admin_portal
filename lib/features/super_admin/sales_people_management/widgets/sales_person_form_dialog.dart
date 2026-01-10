@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:trax_admin_portal/models/sales_person_model.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
+import 'package:trax_admin_portal/theme/app_font_weight.dart';
+import 'package:trax_admin_portal/theme/styled_app_text.dart';
 import 'package:trax_admin_portal/utils/data/us_data.dart';
+import 'package:trax_admin_portal/widgets/app_primary_button.dart';
+import 'package:trax_admin_portal/widgets/app_secondary_button.dart';
 import 'package:trax_admin_portal/widgets/dialogs/app_dialog.dart';
 
 /// Reusable dialog for adding or editing a sales person.
@@ -163,13 +166,11 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
             size: 24,
           ),
           const SizedBox(width: 12),
-          Text(
+          AppText.styledHeadingSmall(
+            context,
             _isEditMode ? 'Edit Sales Person' : 'Add Sales Person',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF111827),
-            ),
+            weight: AppFontWeight.semiBold,
+            color: AppColors.primary,
           ),
         ],
       ),
@@ -270,13 +271,11 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
             const SizedBox(height: 8),
             
             // Helper text
-            Text(
+            AppText.styledBodySmall(
+              context,
               '* Required fields',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: AppColors.textMuted,
-                fontStyle: FontStyle.italic,
-              ),
+              color: AppColors.textMuted,
+              style: FontStyle.italic,
             ),
           ],
         ),
@@ -297,48 +296,21 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           // Cancel button
-          TextButton(
-            onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textMuted,
-              ),
-            ),
+          AppSecondaryButton(
+            text: 'Cancel',
+            onPressed: () => Navigator.of(context).pop(),
+            enabled: !_isSubmitting,
           ),
           
           const SizedBox(width: 12),
           
           // Submit button
-          ElevatedButton(
-            onPressed: _isSubmitting ? null : _handleSubmit,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              elevation: 0,
-            ),
-            child: _isSubmitting
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : Text(
-                    _isEditMode ? 'Update' : 'Add',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+          AppPrimaryButton(
+            text: _isEditMode ? 'Update' : 'Add',
+            onPressed: _handleSubmit,
+            enabled: !_isSubmitting,
+            isLoading: _isSubmitting,
+            backgroundColor: AppColors.primary,
           ),
         ],
       ),
@@ -354,22 +326,18 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
         border: Border.all(color: Colors.grey[300]!),
       ),
       child: SwitchListTile(
-        title: Text(
+        title: AppText.styledBodyMedium(
+          context,
           'Active Status',
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: Colors.black87,
-          ),
+          weight: AppFontWeight.medium,
+          color: AppColors.primary,
         ),
-        subtitle: Text(
+        subtitle: AppText.styledBodySmall(
+          context,
           _isActive 
               ? 'This sales person is currently active' 
               : 'This sales person is currently inactive',
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
+          color: AppColors.textMuted,
         ),
         value: _isActive,
         activeColor: AppColors.success,
@@ -397,22 +365,18 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
       children: [
         Row(
           children: [
-            Text(
+            AppText.styledBodyMedium(
+              context,
               label,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF374151),
-              ),
+              weight: AppFontWeight.medium,
+              color: AppColors.secondary,
             ),
             if (required)
-              Text(
+              AppText.styledBodyMedium(
+                context,
                 ' *',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.red,
-                ),
+                weight: AppFontWeight.bold,
+                color: AppColors.inputError,
               ),
           ],
         ),
@@ -423,18 +387,18 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
           validator: validator,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.poppins(
+            hintStyle: TextStyle(
               fontSize: 14,
               color: AppColors.textMuted,
             ),
             prefixIcon: Icon(icon, size: 20, color: AppColors.textMuted),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: const Color(0xFFE5E7EB)),
+              borderSide: BorderSide(color: AppColors.borderSubtle),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: const Color(0xFFE5E7EB)),
+              borderSide: BorderSide(color: AppColors.borderSubtle),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -442,11 +406,11 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.red.shade400),
+              borderSide: BorderSide(color: AppColors.inputError),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.red.shade400, width: 2),
+              borderSide: BorderSide(color: AppColors.inputError, width: 2),
             ),
             filled: true,
             fillColor: Colors.white,
@@ -455,9 +419,9 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
               vertical: 12,
             ),
           ),
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 14,
-            color: const Color(0xFF111827),
+            color: AppColors.primary,
           ),
         ),
       ],
@@ -469,31 +433,29 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        AppText.styledBodyMedium(
+          context,
           'State',
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF374151),
-          ),
+          weight: AppFontWeight.medium,
+          color: AppColors.secondary,
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           value: _selectedState,
           decoration: InputDecoration(
             hintText: 'Select state',
-            hintStyle: GoogleFonts.poppins(
+            hintStyle: TextStyle(
               fontSize: 14,
               color: AppColors.textMuted,
             ),
             prefixIcon: Icon(Icons.map_outlined, size: 20, color: AppColors.textMuted),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: const Color(0xFFE5E7EB)),
+              borderSide: BorderSide(color: AppColors.borderSubtle),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: const Color(0xFFE5E7EB)),
+              borderSide: BorderSide(color: AppColors.borderSubtle),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -506,9 +468,9 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
               vertical: 12,
             ),
           ),
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 14,
-            color: const Color(0xFF111827),
+            color: AppColors.primary,
           ),
           items: USData.states.map((String state) {
             return DropdownMenuItem<String>(
@@ -531,31 +493,29 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        AppText.styledBodyMedium(
+          context,
           'Country',
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFF374151),
-          ),
+          weight: AppFontWeight.medium,
+          color: AppColors.secondary,
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           value: _selectedCountry,
           decoration: InputDecoration(
             hintText: 'Select country',
-            hintStyle: GoogleFonts.poppins(
+            hintStyle: TextStyle(
               fontSize: 14,
               color: AppColors.textMuted,
             ),
             prefixIcon: Icon(Icons.public_outlined, size: 20, color: AppColors.textMuted),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: const Color(0xFFE5E7EB)),
+              borderSide: BorderSide(color: AppColors.borderSubtle),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: const Color(0xFFE5E7EB)),
+              borderSide: BorderSide(color: AppColors.borderSubtle),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -568,9 +528,9 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
               vertical: 12,
             ),
           ),
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 14,
-            color: const Color(0xFF111827),
+            color: AppColors.primary,
           ),
           items: ['United States'].map((String country) {
             return DropdownMenuItem<String>(

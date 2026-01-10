@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:trax_admin_portal/helper/app_spacing.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
+import 'package:trax_admin_portal/theme/app_font_weight.dart';
 
 /// Empty state widget shown when no sales people exist
 class SalesPeopleEmptyState extends StatelessWidget {
@@ -19,7 +20,7 @@ class SalesPeopleEmptyState extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
+          border: Border.all(color: AppColors.borderSubtle),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -36,25 +37,25 @@ class SalesPeopleEmptyState extends StatelessWidget {
               size: 64,
               color: AppColors.textMuted,
             ),
-            const SizedBox(height: 24),
+            AppSpacing.verticalLg(context),
             Text(
               'No Sales People Yet',
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF111827),
+                fontWeight: AppFontWeight.semiBold,
+                color: AppColors.primary,
               ),
             ),
-            const SizedBox(height: 12),
+            AppSpacing.verticalXs(context),
             Text(
               'Start by adding your first sales person',
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 14,
                 color: AppColors.textMuted,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            AppSpacing.verticalLg(context),
             ElevatedButton.icon(
               onPressed: onAddPressed,
               icon: const Icon(Icons.add),
