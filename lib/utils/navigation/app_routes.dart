@@ -15,6 +15,7 @@ enum AppRoute {
 
   // Super Admin routes
   superAdmin('/super-admin'),
+  superAdminDashboard('/super-admin-dashboard'),
   superAdminEvents('/super-admin-events'),
   superAdminEventDetails('/super-admin-event-details/:eventId', 'eventId'),
   superAdminSalesPeople('/super-admin-sales-people'),

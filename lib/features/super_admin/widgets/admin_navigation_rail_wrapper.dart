@@ -36,22 +36,27 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
   bool _initialStateSet = false;
 
   int _selectedIndexForLocation(String location) {
-    if (location.startsWith(AppRoute.superAdminEvents.path)) return 0;
-    if (location.startsWith(AppRoute.superAdminSalesPeople.path)) return 1;
+    if (location.startsWith(AppRoute.superAdminDashboard.path)) return 0;
+    if (location.startsWith(AppRoute.superAdminEvents.path)) return 1;
+    if (location.startsWith(AppRoute.superAdminSalesPeople.path)) return 2;
     return 0;
   }
 
   Future<void> _onTap(BuildContext context, int index) async {
     switch (index) {
       case 0:
+        // Dashboard
+        pushAndRemoveAllRoute(AppRoute.superAdminDashboard, context);
+        return;
+      case 1:
         // Events
         pushAndRemoveAllRoute(AppRoute.superAdminEvents, context);
         return;
-      case 1:
+      case 2:
         // Sales People
         pushAndRemoveAllRoute(AppRoute.superAdminSalesPeople, context);
         return;
-      case 2:
+      case 3:
         // Logout
         try {
           await authController.logout();
@@ -124,6 +129,11 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
     final bool shouldBeExpanded = isPhone ? _isExpanded : _isExpanded;
 
     final items = <NavItemData>[
+      const NavItemData(
+        label: 'Dashboard',
+        icon: Icons.dashboard_outlined,
+        selectedIcon: Icons.dashboard,
+      ),
       const NavItemData(
         label: 'Events',
         icon: Icons.event_outlined,

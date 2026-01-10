@@ -61,6 +61,7 @@ import 'package:trax_admin_portal/view/guest/widgets/guest_navigation_rail_wrapp
 import 'package:trax_admin_portal/features/super_admin/super_admin_events/view/super_admin_page.dart';
 import 'package:trax_admin_portal/features/super_admin/widgets/admin_navigation_rail_wrapper.dart';
 import 'package:trax_admin_portal/features/super_admin/sales_people_management/view/sales_people_management_page.dart';
+import 'package:trax_admin_portal/features/super_admin/dashboard/view/dashboard_page.dart';
 
 /// Router setup for the Traxx application.
 /// Currently implementing basic navigation structure with go_router.
@@ -96,8 +97,8 @@ GoRouter buildRouter() {
 
               // Check user role and redirect accordingly
               if (authController.isSuperAdmin) {
-                print('Router: Redirecting super admin to super admin events');
-                pushAndRemoveAllRoute(AppRoute.superAdminEvents, context);
+                print('Router: Redirecting super admin to dashboard');
+                pushAndRemoveAllRoute(AppRoute.superAdminDashboard, context);
               } else if (authController.isRegularHost) {
                 print('Router: Redirecting regular host to host events');
                 pushAndRemoveAllRoute(AppRoute.hostEvents, context);
@@ -501,6 +502,10 @@ GoRouter buildRouter() {
           });
         },
         routes: [
+          GoRoute(
+            path: AppRoute.superAdminDashboard.path,
+            builder: (context, state) => DashboardPage(),
+          ),
           GoRoute(
             path: AppRoute.superAdminEvents.path,
             builder: (context, state) => const SuperAdminPage(),
