@@ -492,11 +492,21 @@ GoRouter buildRouter() {
                 Get.put(EventsController());
               }
 
+              // Get the appropriate header for the current route
+              final header = getPageHeader(state, context: context);
+              
               return AdminNavigationRailWrapper(
                 dashboardRoute: AppRoute.superAdminDashboard,
                 eventsRoute: AppRoute.superAdminEvents,
-                child: ContentWrapper(
-                  child: child,
+                child: Column(
+                  children: [
+                    header,
+                    Expanded(
+                      child: ContentWrapper(
+                        child: child,
+                      ),
+                    ),
+                  ],
                 ),
               );
             } catch (e) {
@@ -619,12 +629,22 @@ GoRouter buildRouter() {
                 Get.put(EventsController());
               }
 
+              // Get the appropriate header for the current route
+              final header = getPageHeader(state, context: context);
+              
               return AdminNavigationRailWrapper(
                 hideSalesPeople: true, // Hide Sales People section for sales person
                 dashboardRoute: AppRoute.salesPersonDashboard,
                 eventsRoute: AppRoute.salesPersonEvents,
-                child: ContentWrapper(
-                  child: child,
+                child: Column(
+                  children: [
+                    header,
+                    Expanded(
+                      child: ContentWrapper(
+                        child: child,
+                      ),
+                    ),
+                  ],
                 ),
               );
             } catch (e) {

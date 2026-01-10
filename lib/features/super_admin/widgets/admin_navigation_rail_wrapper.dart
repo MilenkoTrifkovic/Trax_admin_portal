@@ -182,8 +182,8 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
       ),
     ];
 
-    // Super Admin title
-    const organisationName = 'Super Admin';
+    // Determine title based on user role
+    final organisationName = widget.hideSalesPeople ? 'Sales Portal' : 'Super Admin';
 
     final sidebarWidget = SlideTransition(
       position: _sidebarSlide,
@@ -195,7 +195,7 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
           onTap: (i) => _onTap(context, i),
           isExpanded: shouldBeExpanded,
           organisationName: organisationName,
-          organisationPhotoUrl: null, // No photo for super admin
+          organisationPhotoUrl: null, // No photo for super admin or sales person
           onToggleExpand: () {
             setState(() {
               _isExpanded = !_isExpanded;

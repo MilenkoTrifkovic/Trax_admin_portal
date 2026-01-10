@@ -21,11 +21,33 @@ class HostEventDetailsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool idDesktop = ScreenSize.isDesktop(context);
+    
+    // Determine the back route and event details route based on current location
+    final location = GoRouterState.of(context).uri.path;
+    AppRoute backRoute;
+    String? eventIdPlaceholder;
+    bool isHostRoute = false; // Track if this is a host route
+    
+    if (location.startsWith('/super-admin-event-details/')) {
+      backRoute = AppRoute.superAdminEvents;
+      eventIdPlaceholder = AppRoute.superAdminEventDetails.placeholder;
+      isHostRoute = false;
+    } else if (location.startsWith('/sales-person-event-details/')) {
+      backRoute = AppRoute.salesPersonEvents;
+      eventIdPlaceholder = AppRoute.salesPersonEventDetails.placeholder;
+      isHostRoute = false;
+    } else {
+      // Default to host routes
+      backRoute = AppRoute.hostEvents;
+      eventIdPlaceholder = AppRoute.eventDetails.placeholder;
+      isHostRoute = true;
+    }
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         HeaderBackButton(
-            onTap: () => pushAndRemoveAllRoute(AppRoute.hostEvents, context),
+            onTap: () => pushAndRemoveAllRoute(backRoute, context),
             text: 'Back to Events'),
         // AppText.styledHeadingLarge(context, 'Events'),
         Row(
@@ -37,19 +59,24 @@ class HostEventDetailsHeader extends StatelessWidget {
             //   },
             // ),
 
-            AppSpacing.horizontalXs(context),
-            AppSecondaryButton(
-              text: idDesktop ? 'Preview Guest Page' : '',
-              icon: Icons.remove_red_eye,
-              onPressed: () {
-                // Get eventId from route
-                final eventId = GoRouterState.of(context)
-                    .pathParameters[AppRoute.eventDetails.placeholder];
-                if (eventId != null) {
-                  pushRoute(AppRoute.guestSidePreview, context, urlParam: eventId);
-                }
-              },
-            ),
+            // Only show preview button for host routes
+            if (isHostRoute) ...[
+              AppSpacing.horizontalXs(context),
+              AppSecondaryButton(
+                text: idDesktop ? 'Preview Guest Page' : '',
+                icon: Icons.remove_red_eye,
+                onPressed: () {
+                  // Get eventId from route using the dynamic placeholder
+                  final eventId = eventIdPlaceholder != null
+                      ? GoRouterState.of(context).pathParameters[eventIdPlaceholder]
+                      : null;
+                  
+                  if (eventId != null) {
+                    pushRoute(AppRoute.guestSidePreview, context, urlParam: eventId);
+                  }
+                },
+              ),
+            ],
             // AppSecondaryButton(text: 'text'),
             AppSpacing.horizontalXs(context),
             // AppSecondaryButton(

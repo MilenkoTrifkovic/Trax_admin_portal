@@ -24,7 +24,18 @@ Widget getPageHeader(GoRouterState state, {BuildContext? context}) {
   
   print('Header resolver - location: $location');
   
+  // Check for event list pages
   if (location == AppRoute.hostEvents.path) {
+    return AppBarCustom(content: EventListHeader());
+  }
+  
+  if (location == AppRoute.superAdminEvents.path) {
+    return const SizedBox.shrink();
+    return AppBarCustom(content: EventListHeader());
+  }
+  
+  if (location == AppRoute.salesPersonEvents.path) {
+    return const SizedBox.shrink();
     return AppBarCustom(content: EventListHeader());
   }
   
@@ -42,6 +53,17 @@ Widget getPageHeader(GoRouterState state, {BuildContext? context}) {
   if (location.startsWith('/event-details/') && !location.contains('/guest-preview')) {
     return AppBarCustom(content: HostEventDetailsHeader());
   }
+  
+  // Check for super admin event details
+  if (location.startsWith('/super-admin-event-details/')) {
+    return AppBarCustom(content: HostEventDetailsHeader());
+  }
+  
+  // Check for sales person event details
+  if (location.startsWith('/sales-person-event-details/')) {
+    return AppBarCustom(content: HostEventDetailsHeader());
+  }
+  
   if (location == AppRoute.calendarView.path) {
     return AppBarCustom(content: CalendarHeader());
   }
