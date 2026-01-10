@@ -20,6 +20,12 @@ enum AppRoute {
   superAdminEventDetails('/super-admin-event-details/:eventId', 'eventId'),
   superAdminSalesPeople('/super-admin-sales-people'),
 
+  // Sales Person routes
+  salesPerson('/sales-person'),
+  salesPersonDashboard('/sales-person-dashboard'),
+  salesPersonEvents('/sales-person-events'),
+  salesPersonEventDetails('/sales-person-event-details/:eventId', 'eventId'),
+
   /// 🔹 NEW: host menu set details
   hostMenuDetails('/host-menus/:menuId', 'menuId'),
 

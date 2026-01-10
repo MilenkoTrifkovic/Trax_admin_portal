@@ -8,13 +8,20 @@ import 'package:trax_admin_portal/utils/navigation/routes.dart';
 import 'package:trax_admin_portal/view/admin/widgets/sidebar.dart';
 import 'package:trax_admin_portal/view/admin/widgets/sidebar_nav_tiles.dart';
 
-/// Navigation rail wrapper for Super Admin
-/// Contains only Events route and Logout button
+/// Navigation rail wrapper for Super Admin and Sales Person
+/// Contains Dashboard, Events, Sales People (conditionally), and Logout
 class AdminNavigationRailWrapper extends StatefulWidget {
   final Widget child;
+  final bool hideSalesPeople;
+  final AppRoute dashboardRoute;
+  final AppRoute eventsRoute;
+  
   const AdminNavigationRailWrapper({
     super.key,
     required this.child,
+    this.hideSalesPeople = false,
+    required this.dashboardRoute,
+    required this.eventsRoute,
   });
 
   @override
@@ -36,35 +43,58 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
   bool _initialStateSet = false;
 
   int _selectedIndexForLocation(String location) {
-    if (location.startsWith(AppRoute.superAdminDashboard.path)) return 0;
-    if (location.startsWith(AppRoute.superAdminEvents.path)) return 1;
-    if (location.startsWith(AppRoute.superAdminSalesPeople.path)) return 2;
+    if (location.startsWith(widget.dashboardRoute.path)) return 0;
+    if (location.startsWith(widget.eventsRoute.path)) return 1;
+    if (!widget.hideSalesPeople && location.startsWith(AppRoute.superAdminSalesPeople.path)) return 2;
     return 0;
   }
 
   Future<void> _onTap(BuildContext context, int index) async {
-    switch (index) {
-      case 0:
-        // Dashboard
-        pushAndRemoveAllRoute(AppRoute.superAdminDashboard, context);
-        return;
-      case 1:
-        // Events
-        pushAndRemoveAllRoute(AppRoute.superAdminEvents, context);
-        return;
-      case 2:
-        // Sales People
-        pushAndRemoveAllRoute(AppRoute.superAdminSalesPeople, context);
-        return;
-      case 3:
-        // Logout
-        try {
-          await authController.logout();
-        } catch (_) {}
-        if (context.mounted) {
-          pushAndRemoveAllRoute(AppRoute.welcome, context);
-        }
-        return;
+    // Adjust index mapping based on whether Sales People is hidden
+    if (widget.hideSalesPeople) {
+      switch (index) {
+        case 0:
+          // Dashboard
+          pushAndRemoveAllRoute(widget.dashboardRoute, context);
+          return;
+        case 1:
+          // Events
+          pushAndRemoveAllRoute(widget.eventsRoute, context);
+          return;
+        case 2:
+          // Logout
+          try {
+            await authController.logout();
+          } catch (_) {}
+          if (context.mounted) {
+            pushAndRemoveAllRoute(AppRoute.welcome, context);
+          }
+          return;
+      }
+    } else {
+      switch (index) {
+        case 0:
+          // Dashboard
+          pushAndRemoveAllRoute(widget.dashboardRoute, context);
+          return;
+        case 1:
+          // Events
+          pushAndRemoveAllRoute(widget.eventsRoute, context);
+          return;
+        case 2:
+          // Sales People
+          pushAndRemoveAllRoute(AppRoute.superAdminSalesPeople, context);
+          return;
+        case 3:
+          // Logout
+          try {
+            await authController.logout();
+          } catch (_) {}
+          if (context.mounted) {
+            pushAndRemoveAllRoute(AppRoute.welcome, context);
+          }
+          return;
+      }
     }
   }
 
@@ -139,11 +169,12 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
         icon: Icons.event_outlined,
         selectedIcon: Icons.event,
       ),
-      const NavItemData(
-        label: 'Sales People',
-        icon: Icons.people_outline,
-        selectedIcon: Icons.people,
-      ),
+      if (!widget.hideSalesPeople)
+        const NavItemData(
+          label: 'Sales People',
+          icon: Icons.people_outline,
+          selectedIcon: Icons.people,
+        ),
       const NavItemData(
         label: 'Logout',
         icon: Icons.logout_outlined,

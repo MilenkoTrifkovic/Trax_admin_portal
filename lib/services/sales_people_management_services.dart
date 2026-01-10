@@ -261,6 +261,44 @@ class SalesPeopleManagementServices {
     }
   }
 
+  /// Gets a sales person by their email address.
+  /// 
+  /// Parameters:
+  /// - [email]: The email address to search for
+  /// 
+  /// Returns the SalesPersonModel if found, null otherwise.
+  /// Throws [FirebaseException] if the query fails.
+  Future<SalesPersonModel?> getSalesPersonByEmail(String email) async {
+    try {
+      final snapshot = await retryFirestore(
+        () => salesPeopleRef
+            .where('email', isEqualTo: email.toLowerCase())
+            .where('isDisabled', isEqualTo: false)
+            .limit(1)
+            .get(),
+        operationName: 'getSalesPersonByEmail',
+      );
+
+      if (snapshot.docs.isEmpty) {
+        return null;
+      }
+
+      final salesPerson = SalesPersonModel.fromFirestore(
+        snapshot.docs.first.data(),
+        snapshot.docs.first.id,
+      );
+
+      print('Found sales person: ${salesPerson.name} (${salesPerson.email})');
+      return salesPerson;
+    } on FirebaseException catch (e) {
+      print('Firestore error fetching sales person by email: ${e.message}');
+      rethrow;
+    } catch (e) {
+      print('Unknown error fetching sales person by email: $e');
+      rethrow;
+    }
+  }
+
   /// Searches for sales people by name or email.
   /// 
   /// This performs a client-side filter since Firestore doesn't support

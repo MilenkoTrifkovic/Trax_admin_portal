@@ -99,6 +99,9 @@ GoRouter buildRouter() {
               if (authController.isSuperAdmin) {
                 print('Router: Redirecting super admin to dashboard');
                 pushAndRemoveAllRoute(AppRoute.superAdminDashboard, context);
+              } else if (authController.isSalesPerson) {
+                print('Router: Redirecting sales person to dashboard');
+                pushAndRemoveAllRoute(AppRoute.salesPersonDashboard, context);
               } else if (authController.isRegularHost) {
                 print('Router: Redirecting regular host to host events');
                 pushAndRemoveAllRoute(AppRoute.hostEvents, context);
@@ -127,6 +130,9 @@ GoRouter buildRouter() {
             if (authController.isSuperAdmin) {
               print('Email Verification: Redirecting super admin to events');
               return AppRoute.superAdminEvents.path;
+            } else if (authController.isSalesPerson) {
+              print('Email Verification: Redirecting sales person to dashboard');
+              return AppRoute.salesPersonDashboard.path;
             } else if (authController.isRegularHost) {
               print(
                   'Email Verification: Redirecting regular host to host events');
@@ -487,6 +493,8 @@ GoRouter buildRouter() {
               }
 
               return AdminNavigationRailWrapper(
+                dashboardRoute: AppRoute.superAdminDashboard,
+                eventsRoute: AppRoute.superAdminEvents,
                 child: ContentWrapper(
                   child: child,
                 ),
@@ -525,6 +533,129 @@ GoRouter buildRouter() {
             builder: (context, state) => SalesPeopleManagementPage(),
           ),
           // Add more super admin routes here as needed
+        ],
+      ),
+
+      // SALES PERSON SHELL ROUTE
+      ShellRoute(
+        redirect: (context, state) {
+          // Wait for auth controller to finish loading
+          if (authController.isLoading.value) {
+            print('Sales Person: Still loading user profile, waiting...');
+            return null; // Stay on current route while loading
+          }
+
+          // Check authentication
+          if (!authController.isAuthenticated) {
+            print('Sales Person: Redirecting to welcome - not authenticated');
+            return AppRoute.welcome.path;
+          }
+
+          // Check email verification
+          if (!authController.isAuthenticatedAndVerified) {
+            print('Sales Person: Redirecting to email verification');
+            return AppRoute.emailVerification.path;
+          }
+
+          // Check if user is sales person
+          if (!authController.isSalesPerson) {
+            print('Sales Person: User is not a sales person');
+
+            // Check if user has other valid access
+            if (authController.isSuperAdmin) {
+              print('Sales Person: Redirecting super admin to super admin area');
+              return AppRoute.superAdminEvents.path;
+            } else if (authController.isRegularHost) {
+              print('Sales Person: Redirecting regular host to host area');
+              return AppRoute.hostEvents.path;
+            } else {
+              // User has no valid access - shouldn't be here
+              print('Sales Person: User has no valid role, logging out');
+              authController.logout();
+              return AppRoute.welcome.path;
+            }
+          }
+
+          print('✅ Sales Person: Access granted');
+          return null;
+        },
+        builder: (context, state, child) {
+          final authController = Get.find<AuthController>();
+
+          return Obx(() {
+            try {
+              // Show loading while auth is loading
+              if (authController.isLoading.value) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              // Initialize controllers needed for sales person
+              // Only initialize VenuesController if not already registered
+              if (!Get.isRegistered<VenuesController>()) {
+                Get.put(VenuesController());
+              }
+
+              // Initialize OrganisationController if organisation is selected
+              // This runs reactively when organisationId changes
+              if (authController.organisationId.value != null) {
+                if (!Get.isRegistered<OrganisationController>()) {
+                  print(
+                      '🔧 Initializing OrganisationController for sales person with org: ${authController.organisationId.value}');
+                  Get.put(OrganisationController(
+                      authController.organisationId.value!));
+                }
+              }
+
+              // Initialize other required controllers
+              if (!Get.isRegistered<MenusListController>()) {
+                Get.put(MenusListController());
+              }
+              if (!Get.isRegistered<MenusScreenController>()) {
+                Get.put(MenusScreenController());
+              }
+              if (!Get.isRegistered<EventsController>()) {
+                Get.put(EventsController());
+              }
+
+              return AdminNavigationRailWrapper(
+                hideSalesPeople: true, // Hide Sales People section for sales person
+                dashboardRoute: AppRoute.salesPersonDashboard,
+                eventsRoute: AppRoute.salesPersonEvents,
+                child: ContentWrapper(
+                  child: child,
+                ),
+              );
+            } catch (e) {
+              print('Error in sales person builder: $e');
+              return Scaffold(
+                body: Center(
+                  child: Text('Error loading sales person portal: $e'),
+                ),
+              );
+            }
+          });
+        },
+        routes: [
+          GoRoute(
+            path: AppRoute.salesPersonDashboard.path,
+            builder: (context, state) => DashboardPage(),
+          ),
+          GoRoute(
+            path: AppRoute.salesPersonEvents.path,
+            builder: (context, state) => const SuperAdminPage(),
+          ),
+          GoRoute(
+            path: AppRoute.salesPersonEventDetails.path,
+            builder: (context, state) {
+              final eventId = state
+                  .pathParameters[AppRoute.salesPersonEventDetails.placeholder]!;
+              return AdminEventDetails(
+                eventId: eventId,
+              );
+            },
+          ),
         ],
       ),
 

@@ -73,8 +73,10 @@ class _SuperAdminListOfEventsState extends State<SuperAdminListOfEvents> {
         // Check if user is super admin viewing an organization
         final isSuperAdmin =
             authController.userRole.value == UserRole.superAdmin;
+            final isSalesPerson = 
+                authController.userRole.value == UserRole.salesPerson;
 
-        if (isSuperAdmin) {
+        if (isSuperAdmin || isSalesPerson) {
           // Show read-only state for super admin
           return SizedBox(
             height: MediaQuery.of(context).size.height - 200,
@@ -163,10 +165,16 @@ class _SuperAdminListOfEventsState extends State<SuperAdminListOfEvents> {
                     controller.selectedEvent.value = event;
                     eventController.setSelectedEvent(event);
 
-                    // Super admins use their own event details route
+                    // Super admins and sales people use their own event details routes
                     if (authController.userRole.value == UserRole.superAdmin) {
                       pushAndRemoveAllRoute(
                         AppRoute.superAdminEventDetails,
+                        context,
+                        urlParam: event.eventId,
+                      );
+                    } else if (authController.userRole.value == UserRole.salesPerson) {
+                      pushAndRemoveAllRoute(
+                        AppRoute.salesPersonEventDetails,
                         context,
                         urlParam: event.eventId,
                       );

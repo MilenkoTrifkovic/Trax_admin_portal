@@ -2,15 +2,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:trax_admin_portal/models/organisation.dart';
+import 'package:trax_admin_portal/models/sales_person_model.dart';
 import 'package:trax_admin_portal/services/firestore_services/firestore_services.dart';
 import 'package:trax_admin_portal/services/shared_pref_services.dart';
 import 'package:trax_admin_portal/services/cloud_functions_services.dart';
+import 'package:trax_admin_portal/services/sales_people_management_services.dart';
 import 'package:trax_admin_portal/utils/enums/user_type.dart';
 
 class AuthController extends GetxController {
   late final FirestoreServices _firestoreServices;
   late final SharedPrefServices _sharedPrefServices;
   late final CloudFunctionsService _cloudFunctionsService;
+  final SalesPeopleManagementServices _salesPeopleServices =
+      SalesPeopleManagementServices();
 
   final RxBool _isAuthenticated = false.obs;
   final RxBool _companyInfoExists = false.obs;
@@ -24,6 +28,7 @@ class AuthController extends GetxController {
   var userRole = Rx<UserRole?>(null);
   var organisation = Rxn<Organisation>();
   var organisations = <Organisation>[].obs; // For super admin - all organisations
+  var salesPerson = Rxn<SalesPersonModel>(); // ✅ Cached sales person data
 
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 
@@ -46,6 +51,7 @@ class AuthController extends GetxController {
         userRole.value = null;
         organisation.value = null;
         organisations.clear();
+        salesPerson.value = null; // ✅ Clear cached sales person data
       }
 
       isLoading.value = false;
@@ -158,6 +164,42 @@ class AuthController extends GetxController {
     final currentUser = firebaseAuth.currentUser;
     if (currentUser == null) return;
 
+    // First, check if user is a sales person by email
+    try {
+      final fetchedSalesPerson = await _salesPeopleServices.getSalesPersonByEmail(
+        currentUser.email ?? '',
+      );
+      
+      if (fetchedSalesPerson != null && fetchedSalesPerson.isActive && !fetchedSalesPerson.isDisabled) {
+        // User is an active sales person
+        print('✅ User is an active sales person: ${fetchedSalesPerson.name}');
+        salesPerson.value = fetchedSalesPerson; // ✅ Cache the sales person data
+        userRole.value = UserRole.salesPerson;
+        organisationId.value = null;
+        _companyInfoExists.value = false;
+        organisation.value = null;
+        
+        // Sales people can view all organisations (like super admins)
+        try {
+          organisations.value = await _firestoreServices.getAllOrganisations();
+          print('✅ Loaded ${organisations.length} organisations for sales person');
+        } catch (e) {
+          print('❌ Error fetching organisations for sales person: $e');
+          organisations.clear();
+        }
+        
+        return;
+      } else {
+        // Not a sales person or inactive - clear cached data
+        salesPerson.value = null;
+      }
+    } catch (e) {
+      print('⚠️ Error checking sales_people collection: $e');
+      salesPerson.value = null;
+      // Continue to check users collection
+    }
+
+    // Not a sales person, check users collection
     final userDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(currentUser.uid)
@@ -270,6 +312,8 @@ class AuthController extends GetxController {
       companyInfoExists && 
       organisationId.value != null;
 
+  bool get isSalesPerson => userRole.value == UserRole.salesPerson;
+
   /// Super admin: Set selected organisation
   void setSelectedOrganisation(Organisation org) {
     organisation.value = org;
@@ -291,5 +335,6 @@ class AuthController extends GetxController {
     userRole.value = null;
     organisation.value = null;
     organisations.clear();
+    salesPerson.value = null; // ✅ Clear cached sales person data
   }
 }

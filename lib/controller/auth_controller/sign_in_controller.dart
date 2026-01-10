@@ -28,6 +28,7 @@ class SignInController extends GetxController {
   var shouldNavigateToEmailVerification = false.obs;
   var shouldNavigateToOrganisationInfo = false.obs;
   var shouldNavigateToHostEvents = false.obs;
+  var shouldNavigateToSalesPersonDashboard = false.obs;
 
   // ─────────────────────────────────────────────
   // UI toggles
@@ -96,10 +97,20 @@ class SignInController extends GetxController {
 
         if (!isVerified) {
           shouldNavigateToEmailVerification.value = true;
-        } else if (!_authController.companyInfoExists) {
-          shouldNavigateToOrganisationInfo.value = true;
         } else {
-          shouldNavigateToHostEvents.value = true;
+          // ✅ Check if user is a sales person using cached data from AuthController
+          // loadUserProfile() already checked and cached the sales person data
+          final cachedSalesPerson = _authController.salesPerson.value;
+          
+          if (cachedSalesPerson != null && cachedSalesPerson.isActive && !cachedSalesPerson.isDisabled) {
+            // User is an active sales person → redirect to sales person dashboard
+            print('✅ User is a sales person (from cache), redirecting to sales person dashboard');
+            shouldNavigateToSalesPersonDashboard.value = true;
+          } else if (!_authController.companyInfoExists) {
+            shouldNavigateToOrganisationInfo.value = true;
+          } else {
+            shouldNavigateToHostEvents.value = true;
+          }
         }
       }
     } catch (e) {
@@ -137,6 +148,7 @@ class SignInController extends GetxController {
     shouldNavigateToHostEvents.value = false;
     shouldNavigateToEmailVerification.value = false;
     shouldNavigateToOrganisationInfo.value = false;
+    shouldNavigateToSalesPersonDashboard.value = false;
   }
 
   void clearNavigationFlags() {

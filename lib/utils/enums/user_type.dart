@@ -1,4 +1,4 @@
-enum UserRole { superAdmin, admin, user, guest, planner }
+enum UserRole { superAdmin, admin, user, guest, planner, salesPerson }
 
 /// Extension to handle conversion between Firestore format and enum
 extension UserRoleExtension on UserRole {
@@ -15,6 +15,8 @@ extension UserRoleExtension on UserRole {
         return 'guest';
       case UserRole.planner:
         return 'planner';
+      case UserRole.salesPerson:
+        return 'sales_person';
     }
   }
 
@@ -31,6 +33,8 @@ extension UserRoleExtension on UserRole {
         return UserRole.guest;
       case 'planner':
         return UserRole.planner;
+      case 'sales_person':
+        return UserRole.salesPerson;
       default:
         return UserRole.guest; // Default fallback
     }

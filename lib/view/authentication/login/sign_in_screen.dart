@@ -166,5 +166,16 @@ class _SignInScreenWidgetState extends State<SignInScreenWidget> {
         });
       }
     });
+
+    // 🔥 Go to sales person dashboard when user is a sales person
+    ever(controller.shouldNavigateToSalesPersonDashboard, (bool shouldNavigate) {
+      if (shouldNavigate) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          print('UI: Navigating to sales person dashboard');
+          pushAndRemoveAllRoute(AppRoute.salesPersonDashboard, context);
+          controller.clearNavigationFlags();
+        });
+      }
+    });
   }
 }
