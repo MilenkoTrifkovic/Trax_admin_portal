@@ -17,6 +17,7 @@ import 'package:trax_admin_portal/features/guest/rsvp_response/controller/rsvp_r
 import 'package:trax_admin_portal/features/guest/rsvp_response/view/compaignons_info_page.dart';
 import 'package:trax_admin_portal/features/guest/rsvp_response/view/guest_count_page.dart';
 import 'package:trax_admin_portal/features/settings/view/settings_page.dart';
+import 'package:trax_admin_portal/features/super_admin/global_controllers/sales_people_global_controller.dart';
 import 'package:trax_admin_portal/helper/fetch_event.dart';
 import 'package:trax_admin_portal/layout/header_resolver.dart';
 import 'package:trax_admin_portal/models/event.dart';
@@ -131,7 +132,8 @@ GoRouter buildRouter() {
               print('Email Verification: Redirecting super admin to events');
               return AppRoute.superAdminEvents.path;
             } else if (authController.isSalesPerson) {
-              print('Email Verification: Redirecting sales person to dashboard');
+              print(
+                  'Email Verification: Redirecting sales person to dashboard');
               return AppRoute.salesPersonDashboard.path;
             } else if (authController.isRegularHost) {
               print(
@@ -464,6 +466,12 @@ GoRouter buildRouter() {
                 );
               }
 
+              // Initialize global controllers for Super Admin section
+              if (!Get.isRegistered<SalesPeopleGlobalController>()) {
+                Get.put(SalesPeopleGlobalController(), permanent: true);
+                print('✅ Initialized SalesPeopleGlobalController');
+              }
+
               // Initialize controllers needed for event details
               // Only initialize VenuesController if not already registered
               if (!Get.isRegistered<VenuesController>()) {
@@ -494,7 +502,7 @@ GoRouter buildRouter() {
 
               // Get the appropriate header for the current route
               final header = getPageHeader(state, context: context);
-              
+
               return AdminNavigationRailWrapper(
                 dashboardRoute: AppRoute.superAdminDashboard,
                 eventsRoute: AppRoute.superAdminEvents,
@@ -573,7 +581,8 @@ GoRouter buildRouter() {
 
             // Check if user has other valid access
             if (authController.isSuperAdmin) {
-              print('Sales Person: Redirecting super admin to super admin area');
+              print(
+                  'Sales Person: Redirecting super admin to super admin area');
               return AppRoute.superAdminEvents.path;
             } else if (authController.isRegularHost) {
               print('Sales Person: Redirecting regular host to host area');
@@ -599,6 +608,10 @@ GoRouter buildRouter() {
                 return const Scaffold(
                   body: Center(child: CircularProgressIndicator()),
                 );
+              }
+              if (!Get.isRegistered<SalesPeopleGlobalController>()) {
+                Get.put(SalesPeopleGlobalController(), permanent: true);
+                print('✅ Initialized SalesPeopleGlobalController');
               }
 
               // Initialize controllers needed for sales person
@@ -631,9 +644,10 @@ GoRouter buildRouter() {
 
               // Get the appropriate header for the current route
               final header = getPageHeader(state, context: context);
-              
+
               return AdminNavigationRailWrapper(
-                hideSalesPeople: true, // Hide Sales People section for sales person
+                hideSalesPeople:
+                    true, // Hide Sales People section for sales person
                 dashboardRoute: AppRoute.salesPersonDashboard,
                 eventsRoute: AppRoute.salesPersonEvents,
                 child: Column(
@@ -669,8 +683,8 @@ GoRouter buildRouter() {
           GoRoute(
             path: AppRoute.salesPersonEventDetails.path,
             builder: (context, state) {
-              final eventId = state
-                  .pathParameters[AppRoute.salesPersonEventDetails.placeholder]!;
+              final eventId = state.pathParameters[
+                  AppRoute.salesPersonEventDetails.placeholder]!;
               return AdminEventDetails(
                 eventId: eventId,
               );

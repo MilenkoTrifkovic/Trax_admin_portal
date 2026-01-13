@@ -165,9 +165,9 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
         selectedIcon: Icons.dashboard,
       ),
       const NavItemData(
-        label: 'Events',
-        icon: Icons.event_outlined,
-        selectedIcon: Icons.event,
+        label: 'Companies',
+        icon: Icons.business_outlined,
+        selectedIcon: Icons.business,
       ),
       if (!widget.hideSalesPeople)
         const NavItemData(

@@ -72,7 +72,7 @@ class SalesPeopleManagementPage extends StatelessWidget {
             // Content Area
             Expanded(
               child: Obx(() {
-                if (controller.isLoading.value && controller.salesPeople.isEmpty) {
+                if (controller.isLoading && controller.salesPeople.isEmpty) {
                   return const Center(
                     child: CircularProgressIndicator(),
                   );

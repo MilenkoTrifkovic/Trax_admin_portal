@@ -6,6 +6,8 @@ import 'package:trax_admin_portal/controller/common_controllers/event_list_contr
 import 'package:trax_admin_portal/controller/common_controllers/list_of_events_controller.dart';
 import 'package:trax_admin_portal/controller/global_controllers/venues_controller.dart';
 import 'package:trax_admin_portal/helper/app_padding.dart';
+import 'package:trax_admin_portal/helper/app_spacing.dart';
+import 'package:trax_admin_portal/helper/screen_size.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/theme/styled_app_text.dart';
 import 'package:trax_admin_portal/utils/enums/sizes.dart';
@@ -104,6 +106,8 @@ class _SuperAdminListOfEventsState extends State<SuperAdminListOfEvents> {
       }
 
       if (controller.filteredEvents.isEmpty) {
+        final isPhone = ScreenSize.isPhone(context);
+        
         return SizedBox(
           height: 300,
           child: Center(
@@ -112,16 +116,16 @@ class _SuperAdminListOfEventsState extends State<SuperAdminListOfEvents> {
               children: [
                 Icon(
                   Icons.search_off,
-                  size: 64,
+                  size: isPhone ? 48 : 64,
                   color: AppColors.textMuted,
                 ),
-                const SizedBox(height: 16),
+                AppSpacing.verticalMd(context),
                 AppText.styledHeadingSmall(
                   context,
                   'No events found',
                   weight: FontWeight.w600,
                 ),
-                const SizedBox(height: 8),
+                AppSpacing.verticalXs(context),
                 AppText.styledBodyMedium(
                   context,
                   'Try adjusting your filters',
@@ -210,13 +214,13 @@ class _SuperAdminListOfEventsState extends State<SuperAdminListOfEvents> {
                         ? () => paginationController.previousPage()
                         : null,
                   ),
-                  const SizedBox(width: 16),
-                  Text(
+                  AppSpacing.horizontalMd(context),
+                  AppText.styledBodyMedium(
+                    context,
                     paginationController
                         .getPaginationText(controller.filteredEvents),
-                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                  const SizedBox(width: 16),
+                  AppSpacing.horizontalMd(context),
                   IconButton(
                     icon: const Icon(Icons.chevron_right),
                     onPressed: paginationController
