@@ -52,7 +52,7 @@ class CompaniesController extends GetxController {
       print('Loaded ${companies.length} companies');
     } catch (e) {
       print('Error loading companies: $e');
-      _snackbarController.showErrorMessage('Failed to load companies');
+      // _snackbarController.showErrorMessage('Failed to load companies');
     } finally {
       isLoading.value = false;
     }

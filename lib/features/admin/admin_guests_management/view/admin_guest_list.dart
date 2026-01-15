@@ -21,12 +21,16 @@ class GuestListSection extends StatelessWidget {
   /// Maximum number of guests each invitee can bring
   final int maxInviteByGuest;
 
+  /// Read-only mode - hides editing buttons (for sales persons)
+  final bool isReadOnly;
+
   const GuestListSection({
     super.key,
     required this.eventName,
     required this.canInvite,
     this.capacity,
     this.maxInviteByGuest = 0,
+    this.isReadOnly = false,
   });
 
   @override
@@ -51,28 +55,25 @@ class GuestListSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header row: title + toolbar
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Guest list',
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              Flexible(
-                child: GuestListToolbar(
-                  controller: controller,
-                  eventName: eventName,
-                  capacity: capacity,
-                  canInvite: canInvite,
-                  maxInviteByGuest: maxInviteByGuest,
-                ),
-              ),
-            ],
+          // Title
+          Text(
+            'Guest list',
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Toolbar with all buttons
+          GuestListToolbar(
+            controller: controller,
+            eventName: eventName,
+            capacity: capacity,
+            canInvite: canInvite,
+            maxInviteByGuest: maxInviteByGuest,
+            isReadOnly: isReadOnly,
           ),
 
           const SizedBox(height: 12),

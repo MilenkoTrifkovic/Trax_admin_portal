@@ -245,8 +245,12 @@ class CloudFunctionsService extends GetxService {
           throw Exception('Event not found');
         case 'invalid-argument':
           throw Exception('Invalid event ID');
+        case 'deadline-exceeded':
+          throw Exception('Request timed out. Please try again.');
+        case 'unavailable':
+          throw Exception('Service temporarily unavailable. Please try again later.');
         default:
-          throw Exception('Failed to load analytics: ${e.message ?? e.code}');
+          throw Exception('Failed to load analytics: ${e.message ?? e.code}. If this persists, please contact support.');
       }
     } catch (e) {
       print('Error getting event analytics: $e');

@@ -16,10 +16,12 @@ import 'package:trax_admin_portal/widgets/modals/image_viewer_modal.dart';
 /// Allows users to upload PDF or image files for email invitations.
 class InvitationLetterSection extends StatelessWidget {
   final Event event;
+  final bool isReadOnly;
   
   const InvitationLetterSection({
     super.key,
     required this.event,
+    this.isReadOnly = false,
   });
 
   @override
@@ -107,8 +109,8 @@ class InvitationLetterSection extends StatelessWidget {
             if (controller.hasUploadedFile()) {
               return _buildUploadedFilePreview(context, controller);
             }
-            // Case 2: Has local file selected (not yet uploaded)
-            else if (controller.hasLocalFile()) {
+            // Case 2: Has local file selected (not yet uploaded) - only in edit mode
+            else if (!isReadOnly && controller.hasLocalFile()) {
               return Column(
                 children: [
                   _buildLocalFilePreview(controller),
@@ -119,7 +121,10 @@ class InvitationLetterSection extends StatelessWidget {
             }
             // Case 3: No file selected
             else {
-              return _buildUploadArea(controller);
+              // Show upload area only in edit mode, otherwise show empty state
+              return isReadOnly
+                  ? _buildEmptyState()
+                  : _buildUploadArea(controller);
             }
           }),
 
@@ -588,15 +593,16 @@ class InvitationLetterSection extends StatelessWidget {
 
               const SizedBox(width: 4),
 
-              // Delete button
-              Obx(() => _buildIconButton(
-                    icon: Icons.delete_outline,
-                    tooltip: 'Delete file',
-                    onPressed: controller.isUploading.value
-                        ? null
-                        : () => _confirmDelete(context, controller),
-                    color: const Color(0xFFDC2626),
-                  )),
+              // Delete button (hide in read-only mode)
+              if (!isReadOnly)
+                Obx(() => _buildIconButton(
+                      icon: Icons.delete_outline,
+                      tooltip: 'Delete file',
+                      onPressed: controller.isUploading.value
+                          ? null
+                          : () => _confirmDelete(context, controller),
+                      color: const Color(0xFFDC2626),
+                    )),
             ],
           ),
         ],
@@ -652,6 +658,39 @@ class InvitationLetterSection extends StatelessWidget {
         builder: (context) => ImageViewerModal(imageUrl: url),
       );
     }
+  }
+
+  /// Build empty state for read-only mode when no file is uploaded
+  Widget _buildEmptyState() {
+    return Container(
+      height: 120,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.description_outlined,
+              size: 32,
+              color: AppColors.textMuted.withOpacity(0.5),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'No invitation letter uploaded',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: AppFontWeight.medium,
+                color: AppColors.textMuted,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   /// Confirm deletion dialog

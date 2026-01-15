@@ -151,73 +151,75 @@ class EventSummarySection extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         // Upload/Change image button
-                        Material(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                          child: InkWell(
+                        if (!controller.isReadOnly)
+                          Material(
+                            color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
-                            onTap: () => controller.pickAndUploadCoverImage(),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 8,
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    hasCoverImage
-                                        ? Icons.edit_outlined
-                                        : Icons.add_photo_alternate_outlined,
-                                    size: 16,
-                                    color: Colors.white,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () => controller.pickAndUploadCoverImage(),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.3),
+                                    width: 1,
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    hasCoverImage
-                                        ? 'Change Cover'
-                                        : 'Add Cover',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 8,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      hasCoverImage
+                                          ? Icons.edit_outlined
+                                          : Icons.add_photo_alternate_outlined,
+                                      size: 16,
                                       color: Colors.white,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      hasCoverImage
+                                          ? 'Change Cover'
+                                          : 'Add Cover',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
 
                         // Edit event details button
-                        Material(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                          child: InkWell(
+                        if (!controller.isReadOnly)
+                          Material(
+                            color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
-                            onTap: () {
-                              showDialog(
-                                context: context,
-                                builder: (_) => EditEventDetailsDialog(
-                                  controller: controller,
-                                  initialEvent: evt,
-                                ),
-                              );
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.3),
-                                  width: 1,
-                                ),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => EditEventDetailsDialog(
+                                    controller: controller,
+                                    initialEvent: evt,
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.3),
+                                    width: 1,
+                                  ),
                               ),
                               padding: const EdgeInsets.all(8),
                               child: const Icon(

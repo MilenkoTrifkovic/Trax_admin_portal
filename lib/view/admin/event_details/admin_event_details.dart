@@ -37,11 +37,14 @@ class AdminEventDetails extends StatefulWidget {
 
 class _AdminEventDetailsState extends State<AdminEventDetails> {
   late final AdminEventDetailsController controller;
+  late final AuthController authController;
   bool isLoading = true;
+  bool get isReadOnly => authController.isSalesPerson;
 
   @override
   void initState() {
     super.initState();
+    authController = Get.find<AuthController>();
     Get.put(AdminGuestListController());
     controller = AdminEventDetailsController();
     controller.loadEvent(widget.eventId).then((_) {
@@ -84,7 +87,8 @@ class _AdminEventDetailsState extends State<AdminEventDetails> {
           (controller.selectedDemographicSetId.value ?? '').trim().isNotEmpty;
       final hasMenu = controller.selectedMenuItemIds.isNotEmpty;
       final isPublished = evt.status == EventStatus.published;
-      final canInvite = hasDemo && hasMenu && isPublished;
+      // Sales persons cannot invite - they are read-only viewers
+      final canInvite = hasDemo && hasMenu && isPublished && !isReadOnly;
 
       return SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
@@ -123,7 +127,10 @@ class _AdminEventDetailsState extends State<AdminEventDetails> {
                       Obx(() {
                         final event = controller.event.value;
                         if (event == null) return const SizedBox.shrink();
-                        return InvitationLetterSection(event: event);
+                        return InvitationLetterSection(
+                          event: event,
+                          isReadOnly: isReadOnly,
+                        );
                       }),
                     ],
                   ),
@@ -188,6 +195,7 @@ class _AdminEventDetailsState extends State<AdminEventDetails> {
               capacity: evt.capacity,
               canInvite: canInvite,
               maxInviteByGuest: evt.maxInviteByGuest,
+              isReadOnly: isReadOnly,
             ),
           ],
         ),
@@ -219,13 +227,14 @@ class DemographicQuestionsPanelBody extends StatelessWidget {
                 color: Colors.grey,
               ),
               const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: () {
-                  context.push(AppRoute.hostQuestionSets.path);
-                },
-                icon: const Icon(Icons.add),
-                label: const Text("Create Demographic Questions"),
-              )
+              if (!controller.isReadOnly)
+                ElevatedButton.icon(
+                  onPressed: () {
+                    context.push(AppRoute.hostQuestionSets.path);
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text("Create Demographic Questions"),
+                )
             ],
           ),
         );
@@ -266,15 +275,20 @@ class DemographicQuestionsPanelBody extends StatelessWidget {
                 child: ListTile(
                   title: Text(selectedSet.title),
                   subtitle: Text(selectedSet.description ?? ''),
-                  trailing: TextButton(
-                    child: const Text("Change"),
-                    onPressed: () => controller.openDemographicPicker(context),
-                  ),
+                  trailing: controller.isReadOnly
+                      ? null
+                      : TextButton(
+                          child: const Text("Change"),
+                          onPressed: () =>
+                              controller.openDemographicPicker(context),
+                        ),
                 ),
               ),
             ] else ...[
               Text(
-                "No demographic questions selected for this event.",
+                controller.isReadOnly
+                    ? "No demographic questions selected for this event."
+                    : "No demographic questions selected for this event.",
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -282,10 +296,11 @@ class DemographicQuestionsPanelBody extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: () => controller.openDemographicPicker(context),
-                child: const Text("Select Demographic Questions"),
-              ),
+              if (!controller.isReadOnly)
+                ElevatedButton(
+                  onPressed: () => controller.openDemographicPicker(context),
+                  child: const Text("Select Demographic Questions"),
+                ),
             ],
 
             const SizedBox(height: 24),
@@ -302,17 +317,18 @@ class DemographicQuestionsPanelBody extends StatelessWidget {
                   color: Colors.grey.shade700,
                   weight: FontWeight.w600,
                 ),
-                TextButton.icon(
-                  onPressed: () {
-                    context.push(AppRoute.hostQuestionSets.path);
-                  },
-                  icon: const Icon(Icons.settings, size: 18),
-                  label: const Text('Manage Sets'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    textStyle: const TextStyle(fontWeight: FontWeight.w600),
+                if (!controller.isReadOnly)
+                  TextButton.icon(
+                    onPressed: () {
+                      context.push(AppRoute.hostQuestionSets.path);
+                    },
+                    icon: const Icon(Icons.settings, size: 18),
+                    label: const Text('Manage Sets'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      textStyle: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -356,8 +372,10 @@ class DemographicQuestionsPanelBody extends StatelessWidget {
                         ? const Icon(Icons.check_circle, color: Colors.green)
                         : const Icon(Icons.arrow_forward_ios,
                             size: 14, color: Colors.grey),
-                    onTap: () => controller.toggleDemographicSet(
-                        context, set.questionSetId),
+                    onTap: controller.isReadOnly
+                        ? null
+                        : () => controller.toggleDemographicSet(
+                            context, set.questionSetId),
                   ),
                 );
               },
@@ -1152,11 +1170,12 @@ class MenuSelectionCard extends StatelessWidget {
                     color: const Color(0xFF111827),
                   ),
                 ),
-                IconButton(
-                  tooltip: hasSelection ? 'Edit selection' : 'Select dishes',
-                  icon: Icon(hasSelection ? Icons.edit_outlined : Icons.add),
-                  onPressed: () => _openMenuDialog(context),
-                ),
+                if (!controller.isReadOnly)
+                  IconButton(
+                    tooltip: hasSelection ? 'Edit selection' : 'Select dishes',
+                    icon: Icon(hasSelection ? Icons.edit_outlined : Icons.add),
+                    onPressed: () => _openMenuDialog(context),
+                  ),
               ],
             ),
             const SizedBox(height: 8),
@@ -1170,10 +1189,11 @@ class MenuSelectionCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => _openMenuDialog(context),
-                child: Text('Select dishes', style: GoogleFonts.poppins()),
-              ),
+              if (!controller.isReadOnly)
+                TextButton(
+                  onPressed: () => _openMenuDialog(context),
+                  child: Text('Select dishes', style: GoogleFonts.poppins()),
+                ),
             ] else if (isLoadingSelectedDocs) ...[
               // ✅ Handles the “IDs exist but docs are still loading” state
               Text(
@@ -3088,20 +3108,21 @@ class DemographicSelectionCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                IconButton(
-                  tooltip: selectedSet == null
-                      ? 'Select question set'
-                      : 'Change selection',
-                  icon: Icon(
-                      selectedSet == null ? Icons.add : Icons.edit_outlined),
-                  onPressed: () {
-                    if (questions.isEmpty) {
-                      context.push(AppRoute.hostQuestionSets.path);
-                      return;
-                    }
-                    _openDialog(context);
-                  },
-                ),
+                if (!controller.isReadOnly)
+                  IconButton(
+                    tooltip: selectedSet == null
+                        ? 'Select question set'
+                        : 'Change selection',
+                    icon: Icon(
+                        selectedSet == null ? Icons.add : Icons.edit_outlined),
+                    onPressed: () {
+                      if (questions.isEmpty) {
+                        context.push(AppRoute.hostQuestionSets.path);
+                        return;
+                      }
+                      _openDialog(context);
+                    },
+                  ),
               ],
             ),
             const SizedBox(height: 8),
@@ -3115,10 +3136,11 @@ class DemographicSelectionCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              TextButton(
-                onPressed: () => context.push(AppRoute.hostQuestionSets.path),
-                child: const Text('Create demographic questions'),
-              ),
+              if (!controller.isReadOnly)
+                TextButton(
+                  onPressed: () => context.push(AppRoute.hostQuestionSets.path),
+                  child: const Text('Create demographic questions'),
+                ),
             ] else if (selectedSet == null) ...[
               Text(
                 'Please select a question set for this event.',
@@ -3128,10 +3150,11 @@ class DemographicSelectionCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              TextButton(
-                onPressed: () => _openDialog(context),
-                child: const Text('Choose set'),
-              ),
+              if (!controller.isReadOnly)
+                TextButton(
+                  onPressed: () => _openDialog(context),
+                  child: const Text('Choose set'),
+                ),
             ] else ...[
               Text(
                 selectedSet.title,

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:trax_admin_portal/controller/auth_controller/auth_controller.dart';
 import 'package:trax_admin_portal/controller/global_controllers/organisation_controller.dart';
 import 'package:trax_admin_portal/controller/global_controllers/snackbar_message_controller.dart';
 import 'package:trax_admin_portal/controller/global_controllers/venues_controller.dart';
@@ -22,11 +23,15 @@ class AdminEventDetailsController {
   final VenuesController _venuesController = Get.find<VenuesController>();
   final OrganisationController _organisationController =
       Get.find<OrganisationController>();
+  final AuthController _authController = Get.find<AuthController>();
 
   final Rxn<Event> event = Rxn<Event>();
   final Rxn<Venue> venue = Rxn<Venue>();
   // Venue? venue;
   Organisation? organisation;
+
+  /// Read-only mode for sales persons (view only, no editing)
+  bool get isReadOnly => _authController.isSalesPerson;
 
   /// Menus are ONLY for browsing in popup
   final availableMenus = <MenuModel>[].obs;

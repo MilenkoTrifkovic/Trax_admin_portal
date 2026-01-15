@@ -69,17 +69,30 @@ export const getEventAnalytics = onCall(async (request) => {
   const event = eventObj.data || {};
   const eventOrgId = safeStr(event.organisationId);
 
-  // Verify host belongs to organisation OR is super admin
+  // Check if user is in users collection (regular users and super admins)
   const userSnap = await db.collection("users").doc(request.auth.uid).get();
   const user = userSnap.exists ? (userSnap.data() || {}) : {};
   const userOrgId = safeStr(user.organisationId);
   const userRole = safeStr(user.role);
 
-  // Allow super admins to view any event's analytics
-  const isSuperAdmin = userRole === "superAdmin";
+  // Check if user is a salesperson (stored in separate collection)
+  // Sales people are identified by email, not by uid
+  const currentUserEmail = request.auth.token.email || "";
+  const salesPersonQuery = await db.collection("sales_people")
+    .where("email", "==", currentUserEmail)
+    .limit(1)
+    .get();
   
-  if (!isSuperAdmin && (!eventOrgId || !userOrgId || eventOrgId !== userOrgId)) {
-    throw new HttpsError("permission-denied", "Not allowed");
+  const isSalesPerson = !salesPersonQuery.empty && 
+    salesPersonQuery.docs[0].data().isActive === true && 
+    salesPersonQuery.docs[0].data().isDisabled !== true;
+
+  // Allow super admins to view any event's analytics (role stored as "super_admin" in Firestore)
+  const isSuperAdmin = userRole === "super_admin";
+  
+  // Super admins can view any event, sales persons and regular users must belong to same org
+  if (!isSuperAdmin && !isSalesPerson && (!eventOrgId || !userOrgId || eventOrgId !== userOrgId)) {
+    throw new HttpsError("permission-denied", "You don't have permission to view this event's analytics");
   }
 
   // IMPORTANT: invitations/responses store public eventId in your system
