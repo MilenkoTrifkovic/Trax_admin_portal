@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:trax_admin_portal/controller/auth_controller/auth_controller.dart';
 import 'package:trax_admin_portal/features/super_admin/companies/controllers/companies_controller.dart';
 import 'package:trax_admin_portal/helper/app_padding.dart';
 import 'package:trax_admin_portal/helper/app_spacing.dart';
@@ -23,11 +24,13 @@ class CompaniesFilters extends StatefulWidget {
 
 class _CompaniesFiltersState extends State<CompaniesFilters> {
   late final TextEditingController _searchController;
+  late final AuthController _authController;
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    _authController = Get.find<AuthController>();
   }
 
   @override
@@ -44,7 +47,7 @@ class _CompaniesFiltersState extends State<CompaniesFilters> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: widget.isPhone 
+      padding: widget.isPhone
           ? AppPadding.all(context, paddingType: Sizes.md)
           : AppPadding.all(context, paddingType: Sizes.lg),
       decoration: BoxDecoration(
@@ -58,7 +61,7 @@ class _CompaniesFiltersState extends State<CompaniesFilters> {
           ),
         ],
       ),
-      child: widget.isPhone 
+      child: widget.isPhone
           ? _buildMobileFilters(context)
           : _buildDesktopFilters(context),
     );
@@ -73,9 +76,11 @@ class _CompaniesFiltersState extends State<CompaniesFilters> {
           hintText: 'Search by company name...',
           onChanged: widget.controller.updateSearchQuery,
         ),
-        AppSpacing.verticalSm(context),
-        // Salesperson filter
-        _buildSalespersonDropdown(context),
+        // Salesperson filter (hidden for salespeople)
+        if (!_authController.isSalesPerson) ...[
+          AppSpacing.verticalSm(context),
+          _buildSalespersonDropdown(context),
+        ],
         // Clear filters button
         _buildClearFiltersButton(context),
       ],
@@ -95,12 +100,13 @@ class _CompaniesFiltersState extends State<CompaniesFilters> {
           ),
         ),
 
-        AppSpacing.horizontalMd(context),
-
-        // Salesperson filter
-        Expanded(
-          child: _buildSalespersonDropdown(context),
-        ),
+        // Salesperson filter (hidden for salespeople)
+        if (!_authController.isSalesPerson) ...[
+          AppSpacing.horizontalMd(context),
+          Expanded(
+            child: _buildSalespersonDropdown(context),
+          ),
+        ],
 
         AppSpacing.horizontalMd(context),
 
@@ -146,7 +152,7 @@ class _CompaniesFiltersState extends State<CompaniesFilters> {
     return Obx(() {
       final hasFilters = widget.controller.searchQuery.value.isNotEmpty ||
           widget.controller.selectedSalesPersonFilter.value != null;
-      
+
       if (!hasFilters) {
         return const SizedBox.shrink();
       }

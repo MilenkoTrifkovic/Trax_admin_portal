@@ -27,9 +27,7 @@ class CompaniesContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return isPhone 
-        ? _buildCardList(context) 
-        : _buildDataTable(context);
+    return isPhone ? _buildCardList(context) : _buildDataTable(context);
   }
 
   Widget _buildCardList(BuildContext context) {
@@ -115,6 +113,7 @@ class CompaniesContent extends StatelessWidget {
               context,
               'Salesperson',
               'salesperson',
+              disableSort: authController.isSalesPerson,
             ),
           ),
           Expanded(
@@ -136,13 +135,14 @@ class CompaniesContent extends StatelessWidget {
     String label,
     String column, {
     TextAlign textAlign = TextAlign.start,
+    bool disableSort = false,
   }) {
     return Obx(() {
       final isActive = controller.sortColumn.value == column;
       final isAscending = controller.sortAscending.value;
 
       return InkWell(
-        onTap: () => controller.toggleSort(column),
+        onTap: disableSort ? null : () => controller.toggleSort(column),
         child: Row(
           mainAxisAlignment: textAlign == TextAlign.center
               ? MainAxisAlignment.center
@@ -154,14 +154,16 @@ class CompaniesContent extends StatelessWidget {
               color: isActive ? AppColors.primaryAccent : AppColors.primary,
               weight: FontWeight.w600,
             ),
-            const SizedBox(width: 4),
-            Icon(
-              isActive
-                  ? (isAscending ? Icons.arrow_upward : Icons.arrow_downward)
-                  : Icons.unfold_more,
-              size: 16,
-              color: isActive ? AppColors.primaryAccent : AppColors.textMuted,
-            ),
+            if (!disableSort) ...[
+              const SizedBox(width: 4),
+              Icon(
+                isActive
+                    ? (isAscending ? Icons.arrow_upward : Icons.arrow_downward)
+                    : Icons.unfold_more,
+                size: 16,
+                color: isActive ? AppColors.primaryAccent : AppColors.textMuted,
+              ),
+            ],
           ],
         ),
       );
