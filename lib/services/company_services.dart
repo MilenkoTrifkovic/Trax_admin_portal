@@ -8,20 +8,31 @@ class CompanyServices {
 
   /// Fetches all companies with their event counts and assigned salespeople
   ///
+  /// If [salesPersonId] is provided, only returns companies assigned to that salesperson.
+  /// If [salesPersonId] is null, returns all companies.
+  ///
   /// Returns a list of CompanySummary objects containing:
   /// - Company information (name, id)
   /// - Total number of events for that company
   /// - Assigned salesperson information (if any)
-  Future<List<CompanySummary>> getAllCompaniesWithEventCounts() async {
+  Future<List<CompanySummary>> getAllCompaniesWithEventCounts({
+    String? salesPersonId,
+  }) async {
     try {
-      print('📊 Fetching all companies with event counts...');
+      print(
+          '📊 Fetching companies with event counts${salesPersonId != null ? " for salesperson: $salesPersonId" : ""}...');
 
-      // Fetch all organisations
+      // Fetch organisations - filter by salesperson if provided
+      Query<Map<String, dynamic>> orgsQuery =
+          _db.collection('organisations').where('isDisabled', isEqualTo: false);
+
+      if (salesPersonId != null) {
+        orgsQuery =
+            orgsQuery.where('assignedSalesPersonId', isEqualTo: salesPersonId);
+      }
+
       final orgsSnapshot = await retryFirestore(
-        () => _db
-            .collection('organisations')
-            .where('isDisabled', isEqualTo: false)
-            .get(),
+        () => orgsQuery.get(),
         operationName: 'getAllOrganisations',
       );
 

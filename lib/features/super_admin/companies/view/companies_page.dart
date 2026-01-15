@@ -14,17 +14,36 @@ import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/utils/enums/sizes.dart';
 
 /// Main page displaying companies in a data table format
-class CompaniesPage extends StatelessWidget {
-  CompaniesPage({super.key});
+class CompaniesPage extends StatefulWidget {
+  const CompaniesPage({super.key});
 
-  final CompaniesController controller = Get.put(CompaniesController());
-  final AuthController authController = Get.find<AuthController>();
-  final FirestoreServices firestoreServices = FirestoreServices();
+  @override
+  State<CompaniesPage> createState() => _CompaniesPageState();
+}
+
+class _CompaniesPageState extends State<CompaniesPage> {
+  late final CompaniesController controller;
+  late final AuthController authController;
+  late final FirestoreServices firestoreServices;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(CompaniesController());
+    authController = Get.find<AuthController>();
+    firestoreServices = FirestoreServices();
+  }
+
+  @override
+  void dispose() {
+    Get.delete<CompaniesController>();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final isPhone = ScreenSize.isPhone(context);
-    
+
     return Scaffold(
       backgroundColor: AppColors.surfaceCard,
       body: Padding(

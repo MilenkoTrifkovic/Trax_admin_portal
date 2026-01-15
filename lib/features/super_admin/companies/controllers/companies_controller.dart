@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:trax_admin_portal/controller/auth_controller/auth_controller.dart';
 import 'package:trax_admin_portal/controller/global_controllers/snackbar_message_controller.dart';
 import 'package:trax_admin_portal/models/company_summary.dart';
 import 'package:trax_admin_portal/services/company_services.dart';
@@ -8,6 +9,7 @@ class CompaniesController extends GetxController {
   final CompanyServices _companyServices = CompanyServices();
   final SnackbarMessageController _snackbarController =
       Get.find<SnackbarMessageController>();
+  final AuthController _authController = Get.find<AuthController>();
 
   var isLoading = false.obs;
   RxList<CompanySummary> allCompanies = <CompanySummary>[].obs;
@@ -27,10 +29,24 @@ class CompaniesController extends GetxController {
   }
 
   /// Load all companies with their event counts
+  /// If user is a salesperson, only loads their assigned companies
   Future<void> loadCompanies() async {
     try {
       isLoading.value = true;
-      final companies = await _companyServices.getAllCompaniesWithEventCounts();
+
+      // Determine if we need to filter by salesperson
+      String? salesPersonId;
+      if (_authController.isSalesPerson &&
+          _authController.salesPerson.value != null) {
+        salesPersonId = _authController.salesPerson.value!.salesPersonId;
+        print('🔍 Loading companies for salesperson: $salesPersonId');
+      } else {
+        print('🔍 Loading all companies (user is super admin or other role)');
+      }
+
+      final companies = await _companyServices.getAllCompaniesWithEventCounts(
+        salesPersonId: salesPersonId,
+      );
       allCompanies.value = companies;
       _applyFilters();
       print('Loaded ${companies.length} companies');
@@ -79,7 +95,9 @@ class CompaniesController extends GetxController {
     switch (sortColumn.value) {
       case 'name':
         companies.sort((a, b) {
-          final comparison = a.companyName.toLowerCase().compareTo(b.companyName.toLowerCase());
+          final comparison = a.companyName
+              .toLowerCase()
+              .compareTo(b.companyName.toLowerCase());
           return sortAscending.value ? comparison : -comparison;
         });
         break;
