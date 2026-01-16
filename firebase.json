@@ -59,6 +59,21 @@
       ]
     },
     {
+      "site": "trax-host-portal",
+      "public": "build/web",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    {
       "site": "trax-admin-portal",
       "public": "build/web",
       "ignore": [

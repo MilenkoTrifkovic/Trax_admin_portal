@@ -54,6 +54,7 @@ class _CompaniesPageState extends State<CompaniesPage> {
             // Header
             CompaniesHeader(
               controller: controller,
+              authController: authController,
               isPhone: isPhone,
             ),
 
