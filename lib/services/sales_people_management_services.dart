@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:trax_admin_portal/helper/firestore_helper.dart';
+import 'package:trax_admin_portal/helper/ref_code_generator.dart';
 import 'package:trax_admin_portal/models/sales_person_model.dart';
 import 'package:uuid/uuid.dart';
 
@@ -21,16 +22,62 @@ class SalesPeopleManagementServices {
     salesPeopleRef = _db.collection('sales_people');
   }
 
+  /// Checks if a reference code already exists in Firestore
+  /// Returns true if the code exists, false otherwise
+  Future<bool> _refCodeExists(String refCode) async {
+    try {
+      final snapshot = await salesPeopleRef
+          .where('refCode', isEqualTo: refCode)
+          .limit(1)
+          .get();
+      
+      return snapshot.docs.isNotEmpty;
+    } catch (e) {
+      print('Error checking refCode existence: $e');
+      return false; // If check fails, assume it doesn't exist
+    }
+  }
+
+  /// Generates a unique reference code for a sales person
+  /// Checks for collisions and regenerates if necessary
+  /// Max attempts: 10 (to prevent infinite loops)
+  Future<String> _generateUniqueRefCode(String name) async {
+    const maxAttempts = 10;
+    
+    for (int attempt = 0; attempt < maxAttempts; attempt++) {
+      final refCode = attempt == 0 
+          ? RefCodeGenerator.generate(name)
+          : RefCodeGenerator.regenerateDigits(RefCodeGenerator.generate(name));
+      
+      final exists = await _refCodeExists(refCode);
+      
+      if (!exists) {
+        print('Generated unique refCode: $refCode (attempt ${attempt + 1})');
+        return refCode;
+      }
+      
+      print('RefCode $refCode already exists, trying again...');
+    }
+    
+    // Fallback: if we still have collision after 10 attempts, 
+    // use timestamp-based suffix
+    final timestamp = DateTime.now().millisecondsSinceEpoch % 1000;
+    final fallbackCode = '${RefCodeGenerator.generate(name).substring(0, 3)}$timestamp';
+    print('Using fallback refCode: $fallbackCode');
+    return fallbackCode;
+  }
+
   /// Creates a new sales person in Firestore.
   /// 
   /// Generates a unique salesPersonId using UUID v4 if not provided.
+  /// Generates a unique reference code (refCode) based on the person's name.
   /// Uses the salesPersonId as the Firestore document ID for consistency.
   /// Also creates a Firebase Auth account and sends password setup email.
   /// 
   /// Parameters:
   /// - [salesPerson]: The SalesPersonModel to create
   /// 
-  /// Returns the created SalesPersonModel with generated IDs.
+  /// Returns the created SalesPersonModel with generated IDs and refCode.
   /// Throws [FirebaseException] if the create operation fails.
   /// Throws [FirebaseFunctionsException] if account creation fails.
   Future<SalesPersonModel> createSalesPerson(SalesPersonModel salesPerson) async {
@@ -41,15 +88,19 @@ class SalesPeopleManagementServices {
           ? salesPerson.salesPersonId!
           : uuid.v4();
 
+      // Generate unique reference code
+      final refCode = await _generateUniqueRefCode(salesPerson.name);
+
       final toCreate = salesPerson.copyWith(
         docId: salesPersonId,
         salesPersonId: salesPersonId,
+        refCode: refCode,
       );
 
       // Step 1: Create Firestore document first
       final docRef = salesPeopleRef.doc(salesPersonId);
       await docRef.set(toCreate.toFirestoreCreate());
-      print('Sales person Firestore doc created: $salesPersonId');
+      print('Sales person Firestore doc created: $salesPersonId with refCode: $refCode');
 
       // Step 2: Create Firebase Auth account and send password setup email
       try {

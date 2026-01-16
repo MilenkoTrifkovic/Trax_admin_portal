@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:trax_admin_portal/features/super_admin/sales_people_management/controllers/sales_people_management_controller.dart';
 import 'package:trax_admin_portal/models/sales_person_model.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/theme/app_font_weight.dart';
@@ -10,6 +11,7 @@ class SalesPeopleList extends StatelessWidget {
   final Function(BuildContext, SalesPersonModel) onEdit;
   final Function(BuildContext, SalesPersonModel) onDelete;
   final Function(BuildContext, SalesPersonModel)? onResendEmail;
+  final SalesPeopleManagementController controller;
   
   const SalesPeopleList({
     super.key,
@@ -17,6 +19,7 @@ class SalesPeopleList extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     this.onResendEmail,
+    required this.controller,
   });
 
   @override
@@ -47,6 +50,7 @@ class SalesPeopleList extends StatelessWidget {
                 final salesPerson = salesPeople[index];
                 return SalesPersonListItem(
                   salesPerson: salesPerson,
+                  controller: controller,
                   onEdit: () => onEdit(context, salesPerson),
                   onDelete: () => onDelete(context, salesPerson),
                   onResendEmail: onResendEmail != null 
@@ -87,6 +91,17 @@ class SalesPeopleList extends StatelessWidget {
             flex: 2,
             child: Text(
               'Email',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: AppFontWeight.semiBold,
+                color: AppColors.textMuted,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: Text(
+              'Reference Code',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: AppFontWeight.semiBold,

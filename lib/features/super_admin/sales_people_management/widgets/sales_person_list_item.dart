@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:trax_admin_portal/features/super_admin/sales_people_management/controllers/sales_people_management_controller.dart';
 import 'package:trax_admin_portal/helper/app_spacing.dart';
 import 'package:trax_admin_portal/models/sales_person_model.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/theme/app_font_weight.dart';
+import 'package:trax_admin_portal/theme/styled_app_text.dart';
 
 /// Single list item representing a sales person
 class SalesPersonListItem extends StatelessWidget {
   final SalesPersonModel salesPerson;
+  final SalesPeopleManagementController controller;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback? onResendEmail;
@@ -14,6 +18,7 @@ class SalesPersonListItem extends StatelessWidget {
   const SalesPersonListItem({
     super.key,
     required this.salesPerson,
+    required this.controller,
     required this.onEdit,
     required this.onDelete,
     this.onResendEmail,
@@ -66,14 +71,13 @@ class SalesPersonListItem extends StatelessWidget {
           // Email
           Expanded(
             flex: 2,
-            child: Text(
-              salesPerson.email,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.secondary,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
+            child: _buildEmailWithCopy(context),
+          ),
+          
+          // Reference Code
+          Expanded(
+            flex: 1,
+            child: _buildRefCodeWithCopy(context),
           ),
           
           // Location
@@ -167,5 +171,75 @@ class SalesPersonListItem extends StatelessWidget {
     }
     
     return parts.isNotEmpty ? parts.join(', ') : 'No location';
+  }
+  
+  /// Build email display with copy button
+  Widget _buildEmailWithCopy(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(
+          child: AppText.styledBodyMedium(
+            context,
+            salesPerson.email,
+            color: AppColors.secondary,
+            overflow: TextOverflow.ellipsis,
+            isSelectable: true,
+          ),
+        ),
+        const SizedBox(width: 4),
+        IconButton(
+          icon: const Icon(Icons.copy, size: 16),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(
+            minWidth: 24,
+            minHeight: 24,
+          ),
+          tooltip: 'Copy email',
+          onPressed: () {
+            Clipboard.setData(ClipboardData(text: salesPerson.email));
+            controller.copyEmail(salesPerson.email);
+          },
+        ),
+      ],
+    );
+  }
+  
+  /// Build reference code display with copy button
+  Widget _buildRefCodeWithCopy(BuildContext context) {
+    final refCode = salesPerson.refCode ?? 'N/A';
+    final hasRefCode = salesPerson.refCode != null && salesPerson.refCode!.isNotEmpty;
+    
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(
+          child: AppText.styledBodyMedium(
+            context,
+            refCode,
+            color: hasRefCode ? AppColors.primary : AppColors.textMuted,
+            weight: AppFontWeight.semiBold,
+            overflow: TextOverflow.ellipsis,
+            isSelectable: true,
+          ),
+        ),
+        if (hasRefCode) ...[
+          const SizedBox(width: 4),
+          IconButton(
+            icon: const Icon(Icons.copy, size: 16),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(
+              minWidth: 24,
+              minHeight: 24,
+            ),
+            tooltip: 'Copy reference code',
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: refCode));
+              controller.copyRefCode(refCode);
+            },
+          ),
+        ],
+      ],
+    );
   }
 }

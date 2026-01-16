@@ -86,6 +86,7 @@ class SalesPeopleManagementPage extends StatelessWidget {
                 
                 return SalesPeopleList(
                   salesPeople: controller.salesPeople,
+                  controller: controller,
                   onEdit: _showEditSalesPersonDialog,
                   onDelete: _showDeleteConfirmation,
                   onResendEmail: _showResendEmailConfirmation,

@@ -76,4 +76,18 @@ class SalesPeopleManagementController extends GetxController {
       rethrow;
     }
   }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // UI Helper Methods
+  // ═══════════════════════════════════════════════════════════════════════
+
+  /// Copy email to clipboard
+  void copyEmail(String email) {
+    _snackbarController.showSuccessMessage('Email copied to clipboard');
+  }
+
+  /// Copy reference code to clipboard
+  void copyRefCode(String refCode) {
+    _snackbarController.showSuccessMessage('Reference code "$refCode" copied to clipboard');
+  }
 }

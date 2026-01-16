@@ -7,6 +7,9 @@ class SalesPersonModel {
   /// Business id field (optional, can be set to doc id)
   final String? salesPersonId;
 
+  /// Reference code for the sales person (auto-generated)
+  final String? refCode;
+
   final String name;
   final String email;
 
@@ -25,6 +28,7 @@ class SalesPersonModel {
   SalesPersonModel({
     this.docId = '',
     this.salesPersonId,
+    this.refCode,
     required this.name,
     required this.email,
     this.address,
@@ -43,6 +47,8 @@ class SalesPersonModel {
       if (docId.isNotEmpty) 'docId': docId,
       if (salesPersonId != null && salesPersonId!.trim().isNotEmpty)
         'salesPersonId': salesPersonId,
+      if (refCode != null && refCode!.trim().isNotEmpty)
+        'refCode': refCode,
       'name': name,
       'email': email,
       if (address != null) 'address': address,
@@ -62,6 +68,8 @@ class SalesPersonModel {
       if (docId.isNotEmpty) 'docId': docId,
       if (salesPersonId != null && salesPersonId!.trim().isNotEmpty)
         'salesPersonId': salesPersonId,
+      if (refCode != null && refCode!.trim().isNotEmpty)
+        'refCode': refCode,
       'name': name,
       'email': email,
       if (address != null) 'address': address,
@@ -97,9 +105,15 @@ class SalesPersonModel {
             ? data['salesPersonId'].toString().trim()
             : null;
 
+    final refCodeField =
+        (data['refCode']?.toString().trim().isNotEmpty == true)
+            ? data['refCode'].toString().trim()
+            : null;
+
     return SalesPersonModel(
       docId: resolvedDocId,
       salesPersonId: salesPersonIdField,
+      refCode: refCodeField,
       name: (data['name'] as String?) ?? '',
       email: (data['email'] as String?) ?? '',
       address: data['address'] as String?,
@@ -116,6 +130,7 @@ class SalesPersonModel {
   SalesPersonModel copyWith({
     String? docId,
     String? salesPersonId,
+    String? refCode,
     String? name,
     String? email,
     String? address,
@@ -130,6 +145,7 @@ class SalesPersonModel {
     return SalesPersonModel(
       docId: docId ?? this.docId,
       salesPersonId: salesPersonId ?? this.salesPersonId,
+      refCode: refCode ?? this.refCode,
       name: name ?? this.name,
       email: email ?? this.email,
       address: address ?? this.address,
@@ -148,6 +164,7 @@ class SalesPersonModel {
     return 'SalesPersonModel('
         'docId: $docId, '
         'salesPersonId: $salesPersonId, '
+        'refCode: $refCode, '
         'name: $name, '
         'email: $email, '
         'address: $address, '
