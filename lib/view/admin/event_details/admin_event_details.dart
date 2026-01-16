@@ -176,7 +176,10 @@ class _AdminEventDetailsState extends State<AdminEventDetails> {
                 );
               }
               
-              return EventAnalyzerCard(eventId: widget.eventId);
+              return EventAnalyzerCard(
+                eventId: widget.eventId,
+                isReadOnly: isReadOnly,
+              );
             }),
 
             const SizedBox(height: 24),
@@ -3183,7 +3186,13 @@ class DemographicSelectionCard extends StatelessWidget {
 
 class EventAnalyzerCard extends StatefulWidget {
   final String eventId;
-  const EventAnalyzerCard({super.key, required this.eventId});
+  final bool isReadOnly;
+  
+  const EventAnalyzerCard({
+    super.key, 
+    required this.eventId,
+    this.isReadOnly = false,
+  });
 
   @override
   State<EventAnalyzerCard> createState() => _EventAnalyzerCardState();
@@ -3388,20 +3397,22 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
               ],
             ),
 
-            const SizedBox(height: 18),
-            const Divider(height: 1),
-            const SizedBox(height: 18),
+            // Only show "Analyze responses" section if not read-only
+            if (!widget.isReadOnly) ...[
+              const SizedBox(height: 18),
+              const Divider(height: 1),
+              const SizedBox(height: 18),
 
-            // 2) Navigation to dedicated analyzer pages
-            Text(
-              'Analyze responses',
-              style: GoogleFonts.poppins(
-                  fontSize: 14, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 10),
+              // 2) Navigation to dedicated analyzer pages
+              Text(
+                'Analyze responses',
+                style: GoogleFonts.poppins(
+                    fontSize: 14, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 10),
 
-            LayoutBuilder(
-              builder: (context, constraints) {
+              LayoutBuilder(
+                builder: (context, constraints) {
                 final isNarrow = constraints.maxWidth < 920;
 
                 final demoCard = _analyzerNavCard(
@@ -3449,6 +3460,7 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
                 );
               },
             ),
+            ], // End of if (!widget.isReadOnly)
           ],
         ],
       ),

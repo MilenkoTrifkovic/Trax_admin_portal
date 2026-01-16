@@ -81,7 +81,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       scaffoldMessengerKey: rootScaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'Trax Admin Portal',
       // builder: EasyLoading.init(),
       builder: (context, child) {
         return EasyLoading.init()(context, child);

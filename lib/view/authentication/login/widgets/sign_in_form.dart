@@ -159,24 +159,24 @@ class SignInForm extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Subtle guest login link - only visible if accessed accidentally
-          Center(
-            child: TextButton(
-              onPressed: () {
-                pushRoute(AppRoute.guestLogin, context);
-              },
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: AppText.styledBodySmall(
-                context,
-                'Guest login',
-                color: AppColors.textMuted,
-                decoration: TextDecoration.underline,
-              ),
-            ),
-          ),
+          // Center(
+          //   child: TextButton(
+          //     onPressed: () {
+          //       pushRoute(AppRoute.guestLogin, context);
+          //     },
+          //     style: TextButton.styleFrom(
+          //       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          //       minimumSize: Size.zero,
+          //       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          //     ),
+          //     child: AppText.styledBodySmall(
+          //       context,
+          //       'Guest login',
+          //       color: AppColors.textMuted,
+          //       decoration: TextDecoration.underline,
+          //     ),
+          //   ),
+          // ),
 
           const SizedBox(height: 16),
         ],

@@ -1,9 +1,11 @@
 import 'package:get/get.dart';
+import 'package:trax_admin_portal/controller/auth_controller/auth_controller.dart';
 import 'package:trax_admin_portal/services/dashboard_services.dart';
 
 /// Controller for managing dashboard state and data
 class DashboardController extends GetxController {
   final DashboardServices _dashboardServices = DashboardServices();
+  final AuthController _authController = Get.find<AuthController>();
   
   // Observable states
   final RxBool isLoading = false.obs;
@@ -25,8 +27,15 @@ class DashboardController extends GetxController {
     try {
       isLoading.value = true;
       
-      // Fetch all metrics
-      final metrics = await _dashboardServices.getAllMetrics();
+      // Get salesPersonId if user is a salesperson
+      final salesPersonId = _authController.isSalesPerson 
+          ? _authController.salesPerson.value?.salesPersonId 
+          : null;
+      
+      // Fetch all metrics (filtered by salesPersonId if applicable)
+      final metrics = await _dashboardServices.getAllMetrics(
+        salesPersonId: salesPersonId,
+      );
       
       // Update observable values
       guestsCount.value = metrics['guests'] ?? 0;

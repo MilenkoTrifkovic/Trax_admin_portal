@@ -95,10 +95,10 @@ class _SignInScreenWidgetState extends State<SignInScreenWidget> {
                 ),
 
                 // Toggle Section
-                SignInToggle(
-                  controller: controller,
-                  onToggle: () => _clearFormAndToggleMode(controller),
-                ),
+                // SignInToggle(
+                //   controller: controller,
+                //   onToggle: () => _clearFormAndToggleMode(controller),
+                // ),
               ],
             ),
           ),

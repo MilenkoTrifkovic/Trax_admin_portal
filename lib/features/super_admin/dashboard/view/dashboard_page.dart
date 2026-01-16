@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:trax_admin_portal/controller/auth_controller/auth_controller.dart';
 import 'package:trax_admin_portal/features/super_admin/dashboard/controllers/dashboard_controller.dart';
 import 'package:trax_admin_portal/features/super_admin/dashboard/widgets/dashboard_empty_state.dart';
 import 'package:trax_admin_portal/features/super_admin/dashboard/widgets/metric_card.dart';
@@ -8,10 +9,29 @@ import 'package:trax_admin_portal/helper/screen_size.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
 
 /// Main dashboard page for super admin
-class DashboardPage extends StatelessWidget {
-  DashboardPage({super.key});
-  
-  final DashboardController controller = Get.put(DashboardController());
+class DashboardPage extends StatefulWidget {
+  const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  late final DashboardController controller;
+  late final AuthController authController;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.put(DashboardController());
+    authController = Get.find<AuthController>();
+  }
+
+  @override
+  void dispose() {
+    Get.delete<DashboardController>();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +83,11 @@ class DashboardPage extends StatelessWidget {
   
   /// Build page header
   Widget _buildHeader() {
+    final isSalesPerson = authController.isSalesPerson;
+    final subtitle = isSalesPerson
+        ? 'Small wins add up. Take a moment to see what you’ve achieved.'
+        : 'Overview of your admin portal';
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -79,7 +104,7 @@ class DashboardPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Overview of your admin portal',
+              subtitle,
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 color: AppColors.textMuted,
@@ -106,7 +131,10 @@ class DashboardPage extends StatelessWidget {
   /// Build dashboard content with responsive grid
   Widget _buildDashboardContent(BuildContext context) {
     final isMobile = ScreenSize.isPhone(context);
-    final crossAxisCount = isMobile ? 1 : 4;
+    final isSalesPerson = authController.isSalesPerson;
+    
+    // Adjust grid based on whether user is salesperson (3 cards vs 4 cards)
+    final crossAxisCount = isMobile ? 1 : (isSalesPerson ? 3 : 4);
     final childAspectRatio = isMobile ? 1.5 : 1.2;
     
     return SingleChildScrollView(
@@ -161,14 +189,15 @@ class DashboardPage extends StatelessWidget {
                 isLoading: controller.isLoading.value,
               ),
               
-              // Sales People Card
-              MetricCard(
-                icon: Icons.badge_outlined,
-                label: 'Total Sales People',
-                value: controller.salesPeopleCount.value,
-                iconColor: const Color(0xFF8B5CF6),
-                isLoading: controller.isLoading.value,
-              ),
+              // Sales People Card (hidden for salespeople)
+              if (!isSalesPerson)
+                MetricCard(
+                  icon: Icons.badge_outlined,
+                  label: 'Total Sales People',
+                  value: controller.salesPeopleCount.value,
+                  iconColor: const Color(0xFF8B5CF6),
+                  isLoading: controller.isLoading.value,
+                ),
             ],
           )),
         ],

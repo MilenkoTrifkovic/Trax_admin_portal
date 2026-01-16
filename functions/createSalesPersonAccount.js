@@ -160,6 +160,21 @@ export const createSalesPersonAccount = onCall(
           <a href="${resetLink}" style="color:#2563eb;">${resetLink}</a>
         </p>
         
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
+        
+        <p>After setting up your password, access the Sales Portal here:</p>
+        
+        <p style="margin: 24px 0;">
+          <a href="https://trax-admin-portal.web.app" style="display:inline-block;padding:12px 24px;background:#10b981;color:#fff;text-decoration:none;border-radius:6px;font-weight:bold;">
+            Open Sales Portal
+          </a>
+        </p>
+        
+        <p style="color:#6b7280;font-size:14px;">
+          If the button doesn't work, copy and paste this link into your browser:<br/>
+          <a href="https://trax-admin-portal.web.app" style="color:#2563eb;">https://trax-admin-portal.web.app</a>
+        </p>
+        
         <p style="color:#6b7280;font-size:13px;margin-top:20px;">
           <strong>Note:</strong> This link will expire in 1 hour for security reasons.
         </p>
