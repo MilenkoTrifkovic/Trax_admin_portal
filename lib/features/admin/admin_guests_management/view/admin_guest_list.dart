@@ -5,6 +5,7 @@ import 'package:trax_admin_portal/controller/global_controllers/snackbar_message
 import 'package:trax_admin_portal/features/admin/admin_guests_management/widgets/add_guest_popup.dart';
 import 'package:trax_admin_portal/features/admin/admin_guests_management/widgets/guest_list_toolbar.dart';
 import 'package:trax_admin_portal/features/admin/admin_guests_management/controllers/admin_guest_list_controller.dart';
+import 'package:trax_admin_portal/helper/screen_size.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/theme/styled_app_text.dart';
 import 'package:trax_admin_portal/utils/enums/genders.dart';
@@ -37,12 +38,20 @@ class GuestListSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final AdminGuestListController controller =
         Get.find<AdminGuestListController>();
+    
+    final isPhone = ScreenSize.isPhone(context);
+    final isTablet = ScreenSize.isTablet(context);
+    
+    final cardPadding = isPhone ? 16.0 : (isTablet ? 18.0 : 20.0);
+    final borderRadius = isPhone ? 12.0 : (isTablet ? 14.0 : 16.0);
+    final titleFontSize = isPhone ? 14.0 : 15.0;
+    final hintFontSize = isPhone ? 11.0 : 12.0;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      padding: EdgeInsets.fromLTRB(cardPadding, cardPadding - 4, cardPadding, cardPadding),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: const Color(0xFFE5E7EB)),
         boxShadow: [
           BoxShadow(
@@ -59,7 +68,7 @@ class GuestListSection extends StatelessWidget {
           Text(
             'Guest list',
             style: GoogleFonts.poppins(
-              fontSize: 15,
+              fontSize: titleFontSize,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -97,7 +106,7 @@ class GuestListSection extends StatelessWidget {
                     child: Text(
                       'Invites are disabled until you publish the event and complete the following: Menu & dishes selection and Demographic questions.',
                       style: GoogleFonts.poppins(
-                        fontSize: 12,
+                        fontSize: hintFontSize,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF6B7280),
                       ),

@@ -6,6 +6,7 @@ import 'package:trax_admin_portal/features/super_admin/sales_people_management/w
 import 'package:trax_admin_portal/features/super_admin/sales_people_management/widgets/sales_people_list.dart';
 import 'package:trax_admin_portal/features/super_admin/sales_people_management/widgets/sales_person_form_dialog.dart';
 import 'package:trax_admin_portal/helper/app_spacing.dart';
+import 'package:trax_admin_portal/helper/screen_size.dart';
 import 'package:trax_admin_portal/models/sales_person_model.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/theme/app_font_weight.dart';
@@ -19,55 +20,20 @@ class SalesPeopleManagementPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isPhone = ScreenSize.isPhone(context);
+    final isTablet = ScreenSize.isTablet(context);
+    final pagePadding = isPhone ? 16.0 : (isTablet ? 20.0 : 24.0);
+    
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.all(pagePadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Page Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Sales People Management',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: AppFontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    AppSpacing.verticalXs(context),
-                    Text(
-                      'Manage sales people and their assignments',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                  ],
-                ),
-                // Add Sales Person Button
-                ElevatedButton.icon(
-                  onPressed: () => _showAddSalesPersonDialog(context),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Sales Person'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            // Page Header - responsive layout
+            _buildHeader(context, isPhone),
             
-            const SizedBox(height: 32),
+            SizedBox(height: isPhone ? 20 : 32),
             
             // Content Area
             Expanded(
@@ -96,6 +62,90 @@ class SalesPeopleManagementPage extends StatelessWidget {
           ],
         ),
       ),
+      // FAB for mobile
+      floatingActionButton: isPhone 
+          ? FloatingActionButton(
+              onPressed: () => _showAddSalesPersonDialog(context),
+              backgroundColor: AppColors.primary,
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
+    );
+  }
+  
+  /// Build responsive header
+  Widget _buildHeader(BuildContext context, bool isPhone) {
+    if (isPhone) {
+      // Mobile: Stack layout
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Sales People',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: AppFontWeight.bold,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Manage sales people and their assignments',
+            style: TextStyle(
+              fontSize: 13,
+              color: AppColors.textMuted,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      );
+    }
+    
+    // Tablet/Desktop: Row layout
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Sales People Management',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: AppFontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+              AppSpacing.verticalXs(context),
+              Text(
+                'Manage sales people and their assignments',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 16),
+        // Add Sales Person Button
+        ElevatedButton.icon(
+          onPressed: () => _showAddSalesPersonDialog(context),
+          icon: const Icon(Icons.add),
+          label: const Text('Add Sales Person'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 16,
+            ),
+          ),
+        ),
+      ],
     );
   }
   

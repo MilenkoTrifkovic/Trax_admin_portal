@@ -84,20 +84,23 @@ class _DashboardPageState extends State<DashboardPage> {
   /// Build page header
   Widget _buildHeader() {
     final isSalesPerson = authController.isSalesPerson;
+    final isPhone = ScreenSize.isPhone(context);
     final subtitle = isSalesPerson
         ? 'Small wins add up. Take a moment to see what you’ve achieved.'
         : 'Overview of your admin portal';
     
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
+        Expanded(
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Dashboard',
               style: GoogleFonts.poppins(
-                fontSize: 28,
+                fontSize: isPhone ? 24.0 : 28.0,
                 fontWeight: FontWeight.bold,
                 color: const Color(0xFF111827),
               ),
@@ -106,12 +109,16 @@ class _DashboardPageState extends State<DashboardPage> {
             Text(
               subtitle,
               style: GoogleFonts.poppins(
-                fontSize: 14,
+                fontSize: isPhone ? 13.0 : 14.0,
                 color: AppColors.textMuted,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
+        ),
+        const SizedBox(width: 12),
         // Refresh Button
         Obx(() => IconButton(
           onPressed: controller.isLoading.value 
@@ -133,10 +140,6 @@ class _DashboardPageState extends State<DashboardPage> {
     final isMobile = ScreenSize.isPhone(context);
     final isSalesPerson = authController.isSalesPerson;
     
-    // Adjust grid based on whether user is salesperson (3 cards vs 4 cards)
-    final crossAxisCount = isMobile ? 1 : (isSalesPerson ? 3 : 4);
-    final childAspectRatio = isMobile ? 1.5 : 1.2;
-    
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,53 +156,76 @@ class _DashboardPageState extends State<DashboardPage> {
           
           const SizedBox(height: 16),
           
-          // Metrics Grid
-          Obx(() => GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: childAspectRatio,
-            children: [
-              // Guests Card
-              MetricCard(
-                icon: Icons.people_outline,
-                label: 'Total Guests',
-                value: controller.guestsCount.value,
-                iconColor: const Color(0xFF2563EB),
-                isLoading: controller.isLoading.value,
-              ),
+          // Metrics Grid - using LayoutBuilder + Wrap for content-based sizing
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final availableWidth = constraints.maxWidth;
+              // Calculate card width based on screen size
+              // Mobile: full width, Tablet: 2 cards, Desktop: 3-4 cards
+              final cardWidth = isMobile 
+                  ? availableWidth 
+                  : (availableWidth < 900 
+                      ? (availableWidth - 16) / 2 
+                      : (isSalesPerson 
+                          ? (availableWidth - 32) / 3 
+                          : (availableWidth - 48) / 4));
               
-              // Events Card
-              MetricCard(
-                icon: Icons.event_outlined,
-                label: 'Total Events',
-                value: controller.eventsCount.value,
-                iconColor: const Color(0xFF10B981),
-                isLoading: controller.isLoading.value,
-              ),
-              
-              // Organisations Card
-              MetricCard(
-                icon: Icons.business_outlined,
-                label: 'Total Organisations',
-                value: controller.organisationsCount.value,
-                iconColor: const Color(0xFFF59E0B),
-                isLoading: controller.isLoading.value,
-              ),
-              
-              // Sales People Card (hidden for salespeople)
-              if (!isSalesPerson)
-                MetricCard(
-                  icon: Icons.badge_outlined,
-                  label: 'Total Sales People',
-                  value: controller.salesPeopleCount.value,
-                  iconColor: const Color(0xFF8B5CF6),
-                  isLoading: controller.isLoading.value,
-                ),
-            ],
-          )),
+              return Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: [
+                  // Guests Card
+                  SizedBox(
+                    width: cardWidth,
+                    child: Obx(() => MetricCard(
+                      icon: Icons.people_outline,
+                      label: 'Total Guests',
+                      value: controller.guestsCount.value,
+                      iconColor: const Color(0xFF2563EB),
+                      isLoading: controller.isLoading.value,
+                    )),
+                  ),
+                  
+                  // Events Card
+                  SizedBox(
+                    width: cardWidth,
+                    child: Obx(() => MetricCard(
+                      icon: Icons.event_outlined,
+                      label: 'Total Events',
+                      value: controller.eventsCount.value,
+                      iconColor: const Color(0xFF10B981),
+                      isLoading: controller.isLoading.value,
+                    )),
+                  ),
+                  
+                  // Organisations Card
+                  SizedBox(
+                    width: cardWidth,
+                    child: Obx(() => MetricCard(
+                      icon: Icons.business_outlined,
+                      label: 'Total Organisations',
+                      value: controller.organisationsCount.value,
+                      iconColor: const Color(0xFFF59E0B),
+                      isLoading: controller.isLoading.value,
+                    )),
+                  ),
+                  
+                  // Sales People Card (hidden for salespeople)
+                  if (!isSalesPerson)
+                    SizedBox(
+                      width: cardWidth,
+                      child: Obx(() => MetricCard(
+                        icon: Icons.badge_outlined,
+                        label: 'Total Sales People',
+                        value: controller.salesPeopleCount.value,
+                        iconColor: const Color(0xFF8B5CF6),
+                        isLoading: controller.isLoading.value,
+                      )),
+                    ),
+                ],
+              );
+            },
+          ),
         ],
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:trax_admin_portal/features/super_admin/sales_people_management/controllers/sales_people_management_controller.dart';
+import 'package:trax_admin_portal/helper/screen_size.dart';
 import 'package:trax_admin_portal/models/sales_person_model.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/theme/app_font_weight.dart';
@@ -24,6 +25,9 @@ class SalesPeopleList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isPhone = ScreenSize.isPhone(context);
+    final isTablet = ScreenSize.isTablet(context);
+    
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -39,8 +43,8 @@ class SalesPeopleList extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // List Header
-          _buildListHeader(),
+          // List Header - hidden on phone, simplified on tablet
+          if (!isPhone) _buildListHeader(context, isTablet),
           
           // List Items
           Expanded(
@@ -66,7 +70,7 @@ class SalesPeopleList extends StatelessWidget {
   }
   
   /// Build the list header with column titles
-  Widget _buildListHeader() {
+  Widget _buildListHeader(BuildContext context, bool isTablet) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -74,66 +78,113 @@ class SalesPeopleList extends StatelessWidget {
           bottom: BorderSide(color: AppColors.borderSubtle),
         ),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              'Name',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: AppFontWeight.semiBold,
-                color: AppColors.textMuted,
-              ),
+      child: isTablet ? _buildTabletHeader() : _buildDesktopHeader(),
+    );
+  }
+  
+  /// Tablet header - simplified columns
+  Widget _buildTabletHeader() {
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(
+            'Name / Email',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: AppFontWeight.semiBold,
+              color: AppColors.textMuted,
             ),
           ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              'Email',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: AppFontWeight.semiBold,
-                color: AppColors.textMuted,
-              ),
+        ),
+        Expanded(
+          flex: 1,
+          child: Text(
+            'Ref Code',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: AppFontWeight.semiBold,
+              color: AppColors.textMuted,
             ),
           ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              'Reference Code',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: AppFontWeight.semiBold,
-                color: AppColors.textMuted,
-              ),
+        ),
+        Expanded(
+          flex: 1,
+          child: Text(
+            'Status',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: AppFontWeight.semiBold,
+              color: AppColors.textMuted,
             ),
           ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              'Location',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: AppFontWeight.semiBold,
-                color: AppColors.textMuted,
-              ),
+        ),
+        const SizedBox(width: 80), // Space for actions
+      ],
+    );
+  }
+  
+  /// Desktop header - all columns
+  Widget _buildDesktopHeader() {
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(
+            'Name',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: AppFontWeight.semiBold,
+              color: AppColors.textMuted,
             ),
           ),
-          Expanded(
-            flex: 1,
-            child: Text(
-              'Status',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: AppFontWeight.semiBold,
-                color: AppColors.textMuted,
-              ),
+        ),
+        Expanded(
+          flex: 2,
+          child: Text(
+            'Email',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: AppFontWeight.semiBold,
+              color: AppColors.textMuted,
             ),
           ),
-          const SizedBox(width: 80), // Space for actions
-        ],
-      ),
+        ),
+        Expanded(
+          flex: 1,
+          child: Text(
+            'Reference Code',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: AppFontWeight.semiBold,
+              color: AppColors.textMuted,
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 2,
+          child: Text(
+            'Location',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: AppFontWeight.semiBold,
+              color: AppColors.textMuted,
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 1,
+          child: Text(
+            'Status',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: AppFontWeight.semiBold,
+              color: AppColors.textMuted,
+            ),
+          ),
+        ),
+        const SizedBox(width: 80), // Space for actions
+      ],
     );
   }
 }

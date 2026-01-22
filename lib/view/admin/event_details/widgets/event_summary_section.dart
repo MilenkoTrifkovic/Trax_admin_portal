@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:trax_admin_portal/controller/admin_controllers/admin_event_details_controllers/admin_event_details_controller.dart';
+import 'package:trax_admin_portal/helper/screen_size.dart';
 import 'package:trax_admin_portal/view/admin/event_details/admin_event_details.dart';
 
 class EventSummarySection extends StatelessWidget {
@@ -11,6 +12,19 @@ class EventSummarySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isPhone = ScreenSize.isPhone(context);
+    final isTablet = ScreenSize.isTablet(context);
+    
+    // Responsive sizing
+    final containerHeight = isPhone ? 220.0 : (isTablet ? 250.0 : 280.0);
+    final borderRadius = isPhone ? 16.0 : 20.0;
+    final contentPadding = isPhone ? 18.0 : (isTablet ? 24.0 : 28.0);
+    final titleFontSize = isPhone ? 24.0 : (isTablet ? 28.0 : 32.0);
+    final buttonIconSize = isPhone ? 14.0 : 16.0;
+    final buttonFontSize = isPhone ? 12.0 : 13.0;
+    final pillFontSize = isPhone ? 12.0 : 13.0;
+    final pillIconSize = isPhone ? 14.0 : 16.0;
+    
     return Obx(() {
       final evt = controller.event.value;
       if (evt == null) return const SizedBox.shrink();
@@ -26,9 +40,9 @@ class EventSummarySection extends StatelessWidget {
       final hasCoverImage = evt.coverImageDownloadUrl != null &&
           evt.coverImageDownloadUrl!.isNotEmpty;
       return Container(
-        height: 280,
+        height: containerHeight,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.08),
@@ -43,7 +57,7 @@ class EventSummarySection extends StatelessWidget {
             if (hasCoverImage)
               Positioned.fill(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(borderRadius),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
@@ -126,7 +140,7 @@ class EventSummarySection extends StatelessWidget {
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(borderRadius),
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -142,7 +156,7 @@ class EventSummarySection extends StatelessWidget {
             // Content overlay
             Positioned.fill(
               child: Container(
-                padding: const EdgeInsets.all(28),
+                padding: EdgeInsets.all(contentPadding),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -166,9 +180,9 @@ class EventSummarySection extends StatelessWidget {
                                     width: 1,
                                   ),
                                 ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: isPhone ? 10 : 14,
+                                  vertical: isPhone ? 6 : 8,
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -177,16 +191,16 @@ class EventSummarySection extends StatelessWidget {
                                       hasCoverImage
                                           ? Icons.edit_outlined
                                           : Icons.add_photo_alternate_outlined,
-                                      size: 16,
+                                      size: buttonIconSize,
                                       color: Colors.white,
                                     ),
-                                    const SizedBox(width: 8),
+                                    SizedBox(width: isPhone ? 6 : 8),
                                     Text(
                                       hasCoverImage
                                           ? 'Change Cover'
                                           : 'Add Cover',
                                       style: GoogleFonts.poppins(
-                                        fontSize: 13,
+                                        fontSize: buttonFontSize,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.white,
                                       ),
@@ -221,11 +235,11 @@ class EventSummarySection extends StatelessWidget {
                                     width: 1,
                                   ),
                               ),
-                              padding: const EdgeInsets.all(8),
-                              child: const Icon(
+                              padding: EdgeInsets.all(isPhone ? 6 : 8),
+                              child: Icon(
                                 Icons.settings_outlined,
                                 color: Colors.white,
-                                size: 20,
+                                size: isPhone ? 18 : 20,
                               ),
                             ),
                           ),
@@ -239,7 +253,7 @@ class EventSummarySection extends StatelessWidget {
                     Text(
                       evt.name,
                       style: GoogleFonts.poppins(
-                        fontSize: 32,
+                        fontSize: titleFontSize,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                         height: 1.2,
@@ -253,25 +267,31 @@ class EventSummarySection extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 16),
+                    SizedBox(height: isPhone ? 12 : 16),
 
                     // Info pills
                     Wrap(
-                      spacing: 12,
-                      runSpacing: 10,
+                      spacing: isPhone ? 8 : 12,
+                      runSpacing: isPhone ? 8 : 10,
                       children: [
                         _glassPill(
                           icon: Icons.event_outlined,
                           label: '$dateStr • $timeStr',
+                          iconSize: pillIconSize,
+                          fontSize: pillFontSize,
                         ),
                         _glassPill(
                           icon: Icons.place_outlined,
                           label: organisation?.city ?? 'Location not set',
+                          iconSize: pillIconSize,
+                          fontSize: pillFontSize,
                         ),
                         _glassPill(
                           icon: Icons.location_city_outlined,
                           label:
                               venue.value?.name.capitalize ?? 'Venue not set',
+                          iconSize: pillIconSize,
+                          fontSize: pillFontSize,
                         ),
                         _glassPill(
                           icon: Icons.restaurant_outlined,
@@ -279,6 +299,8 @@ class EventSummarySection extends StatelessWidget {
                               ? 'Service type'
                               : evt.serviceType.name[0].toUpperCase() +
                                   evt.serviceType.name.substring(1),
+                          iconSize: pillIconSize,
+                          fontSize: pillFontSize,
                         ),
                       ],
                     ),
@@ -293,9 +315,17 @@ class EventSummarySection extends StatelessWidget {
   }
 
   // Glass morphism style pill for better visibility on image backgrounds
-  Widget _glassPill({required IconData icon, required String label}) {
+  Widget _glassPill({
+    required IconData icon,
+    required String label,
+    required double iconSize,
+    required double fontSize,
+  }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: EdgeInsets.symmetric(
+        horizontal: fontSize < 13 ? 12 : 14,
+        vertical: fontSize < 13 ? 6 : 8,
+      ),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(999),
@@ -316,14 +346,14 @@ class EventSummarySection extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 16,
+            size: iconSize,
             color: Colors.white,
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: fontSize < 13 ? 6 : 8),
           Text(
             label,
             style: GoogleFonts.poppins(
-              fontSize: 13,
+              fontSize: fontSize,
               fontWeight: FontWeight.w600,
               color: Colors.white,
               shadows: [

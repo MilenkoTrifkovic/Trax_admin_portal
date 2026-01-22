@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:trax_admin_portal/controller/auth_controller/auth_controller.dart';
 import 'package:trax_admin_portal/controller/admin_controllers/admin_event_details_controllers/admin_event_details_controller.dart';
 import 'package:trax_admin_portal/features/admin/admin_guests_management/view/admin_guest_list.dart';
+import 'package:trax_admin_portal/helper/screen_size.dart';
 import 'package:trax_admin_portal/models/event.dart';
 import 'package:trax_admin_portal/models/menu_item.dart';
 import 'package:trax_admin_portal/models/menu_model.dart';
@@ -111,17 +112,18 @@ class _AdminEventDetailsState extends State<AdminEventDetails> {
 
             const SizedBox(height: 24),
 
-            /// Row with Menu card + Demographic column (Demographic + Additional Info)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: MenuSelectionCard(controller: controller),
-                ),
-                const SizedBox(width: 24),
-                Expanded(
-                  child: Column(
+            /// Menu card + Demographic column (Demographic + Additional Info)
+            /// Stacks vertically on smaller screens, side-by-side on larger screens
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final isNarrow = constraints.maxWidth < 920;
+                
+                if (isNarrow) {
+                  // Stack vertically on smaller screens
+                  return Column(
                     children: [
+                      MenuSelectionCard(controller: controller),
+                      const SizedBox(height: 16),
                       DemographicSelectionCard(controller: controller),
                       const SizedBox(height: 16),
                       Obx(() {
@@ -133,9 +135,36 @@ class _AdminEventDetailsState extends State<AdminEventDetails> {
                         );
                       }),
                     ],
-                  ),
-                ),
-              ],
+                  );
+                }
+                
+                // Side by side on larger screens
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: MenuSelectionCard(controller: controller),
+                    ),
+                    const SizedBox(width: 24),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          DemographicSelectionCard(controller: controller),
+                          const SizedBox(height: 16),
+                          Obx(() {
+                            final event = controller.event.value;
+                            if (event == null) return const SizedBox.shrink();
+                            return InvitationLetterSection(
+                              event: event,
+                              isReadOnly: isReadOnly,
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 24),
             
@@ -1346,16 +1375,21 @@ class MenuSelectionCard extends StatelessWidget {
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 6),
                 Row(
                   children: [
                     if (ftLabel.isNotEmpty)
-                      Text(
-                        ftLabel,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: const Color(0xFF6B7280),
+                      Flexible(
+                        child: Text(
+                          ftLabel,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: const Color(0xFF6B7280),
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     if (ftLabel.isNotEmpty && catLabel.isNotEmpty)
@@ -1365,11 +1399,14 @@ class MenuSelectionCard extends StatelessWidget {
                             style: TextStyle(color: Color(0xFFCBD5E1))),
                       ),
                     if (catLabel.isNotEmpty)
-                      Text(
-                        catLabel,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: const Color(0xFF6B7280),
+                      Flexible(
+                        child: Text(
+                          catLabel,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: const Color(0xFF6B7280),
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                   ],
@@ -3068,6 +3105,16 @@ class DemographicSelectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isPhone = ScreenSize.isPhone(context);
+    final isTablet = ScreenSize.isTablet(context);
+    
+    final cardPadding = isPhone ? 16.0 : (isTablet ? 18.0 : 20.0);
+    final borderRadius = isPhone ? 12.0 : (isTablet ? 14.0 : 16.0);
+    final titleFontSize = isPhone ? 14.0 : 15.0;
+    final bodyFontSize = isPhone ? 12.0 : 13.0;
+    final subtitleFontSize = isPhone ? 13.0 : 14.0;
+    final descFontSize = isPhone ? 11.0 : 12.0;
+    
     return Obx(() {
       final questions = controller.availableQuestionSets;
       final selectedId = controller.selectedDemographicSetId.value;
@@ -3084,10 +3131,10 @@ class DemographicSelectionCard extends StatelessWidget {
       }
 
       return Container(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(cardPadding),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(borderRadius),
           border: Border.all(color: const Color(0xFFE5E7EB)),
           boxShadow: [
             BoxShadow(
@@ -3107,7 +3154,7 @@ class DemographicSelectionCard extends StatelessWidget {
                 Text(
                   'Demographic questions',
                   style: GoogleFonts.poppins(
-                    fontSize: 15,
+                    fontSize: titleFontSize,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -3134,7 +3181,7 @@ class DemographicSelectionCard extends StatelessWidget {
               Text(
                 "You haven't created any demographic question sets yet.",
                 style: GoogleFonts.poppins(
-                  fontSize: 13,
+                  fontSize: bodyFontSize,
                   color: const Color(0xFF6B7280),
                 ),
               ),
@@ -3148,7 +3195,7 @@ class DemographicSelectionCard extends StatelessWidget {
               Text(
                 'Please select a question set for this event.',
                 style: GoogleFonts.poppins(
-                  fontSize: 13,
+                  fontSize: bodyFontSize,
                   color: const Color(0xFF6B7280),
                 ),
               ),
@@ -3162,7 +3209,7 @@ class DemographicSelectionCard extends StatelessWidget {
               Text(
                 selectedSet.title,
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: subtitleFontSize,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -3171,7 +3218,7 @@ class DemographicSelectionCard extends StatelessWidget {
                 Text(
                   selectedSet.description,
                   style: GoogleFonts.poppins(
-                    fontSize: 12,
+                    fontSize: descFontSize,
                     color: const Color(0xFF6B7280),
                   ),
                 ),
@@ -3274,6 +3321,16 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isPhone = ScreenSize.isPhone(context);
+    final isTablet = ScreenSize.isTablet(context);
+    
+    final cardPadding = isPhone ? 16.0 : (isTablet ? 18.0 : 20.0);
+    final borderRadius = isPhone ? 12.0 : (isTablet ? 14.0 : 16.0);
+    final titleFontSize = isPhone ? 15.0 : 16.0;
+    final subtitleFontSize = isPhone ? 11.0 : 12.0;
+    final sectionTitleFontSize = isPhone ? 13.0 : 14.0;
+    final bodyFontSize = isPhone ? 12.0 : 13.0;
+    
     final inv = _asMap(_data?['invitations']);
     final demo = _asMap(_data?['demographics']);
     final menu = _asMap(_data?['menu']);
@@ -3291,10 +3348,10 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
         : DateFormat('dd MMM, HH:mm').format(_loadedAt!);
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(cardPadding),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: const Color(0xFFE5E7EB)),
         boxShadow: [
           BoxShadow(
@@ -3317,7 +3374,7 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
                     Text(
                       'Event analyzer',
                       style: GoogleFonts.poppins(
-                        fontSize: 16,
+                        fontSize: titleFontSize,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF111827),
                       ),
@@ -3327,7 +3384,7 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
                       Text(
                         'Updated • $lastUpdated',
                         style: GoogleFonts.poppins(
-                          fontSize: 12,
+                          fontSize: subtitleFontSize,
                           color: const Color(0xFF6B7280),
                         ),
                       ),
@@ -3349,7 +3406,7 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
             Text(
               'Loading analytics...',
               style: GoogleFonts.poppins(
-                fontSize: 13,
+                fontSize: bodyFontSize,
                 color: const Color(0xFF6B7280),
               ),
             ),
@@ -3360,13 +3417,13 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
             Text(
               'Failed to load analytics',
               style: GoogleFonts.poppins(
-                  fontSize: 14, fontWeight: FontWeight.w700),
+                  fontSize: sectionTitleFontSize, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 6),
             Text(
               _error!,
               style:
-                  GoogleFonts.poppins(fontSize: 12, color: Colors.red.shade700),
+                  GoogleFonts.poppins(fontSize: subtitleFontSize, color: Colors.red.shade700),
             ),
             const SizedBox(height: 10),
             Align(
@@ -3382,7 +3439,7 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
             Text(
               'Completion funnel',
               style: GoogleFonts.poppins(
-                  fontSize: 14, fontWeight: FontWeight.w700),
+                  fontSize: sectionTitleFontSize, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 10),
 
@@ -3390,10 +3447,10 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
               spacing: 10,
               runSpacing: 10,
               children: [
-                _statTile('Invited', totalInv, totalInv),
-                _statTile('Emails sent', sent, totalInv),
-                _statTile('Demographics done', demoDone, totalInv),
-                _statTile('Menu done', menuDone, totalInv),
+                _statTile('Invited', totalInv, totalInv, bodyFontSize),
+                _statTile('Emails sent', sent, totalInv, bodyFontSize),
+                _statTile('Demographics done', demoDone, totalInv, bodyFontSize),
+                _statTile('Menu done', menuDone, totalInv, bodyFontSize),
               ],
             ),
 
@@ -3407,7 +3464,7 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
               Text(
                 'Analyze responses',
                 style: GoogleFonts.poppins(
-                    fontSize: 14, fontWeight: FontWeight.w700),
+                    fontSize: sectionTitleFontSize, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 10),
 
@@ -3540,12 +3597,16 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
     );
   }
 
-  Widget _statTile(String label, int value, int total) {
+  Widget _statTile(String label, int value, int total, double labelFontSize) {
     final pct = (total <= 0) ? 0 : (value / total);
     final pctText = total <= 0 ? '—' : '${(pct * 100).round()}%';
+    
+    final valueFontSize = labelFontSize + 6.0;
+    final pctFontSize = labelFontSize;
+    final tileWidth = labelFontSize < 13 ? 200.0 : 220.0;
 
     return Container(
-      width: 220,
+      width: tileWidth,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAFB),
@@ -3557,20 +3618,20 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
         children: [
           Text(label,
               style: GoogleFonts.poppins(
-                  fontSize: 12, color: const Color(0xFF6B7280))),
+                  fontSize: labelFontSize, color: const Color(0xFF6B7280))),
           const SizedBox(height: 6),
           Row(
             children: [
               Text(
                 '$value',
                 style: GoogleFonts.poppins(
-                    fontSize: 18, fontWeight: FontWeight.w800),
+                    fontSize: valueFontSize, fontWeight: FontWeight.w800),
               ),
               const Spacer(),
               Text(
                 pctText,
                 style: GoogleFonts.poppins(
-                    fontSize: 12, fontWeight: FontWeight.w700),
+                    fontSize: pctFontSize, fontWeight: FontWeight.w700),
               ),
             ],
           ),

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:trax_admin_portal/controller/admin_controllers/event_details_controllers/invitation_letter_controller.dart';
 import 'package:trax_admin_portal/helper/app_spacing.dart';
+import 'package:trax_admin_portal/helper/screen_size.dart';
 import 'package:trax_admin_portal/models/event.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/theme/app_font_weight.dart';
@@ -30,12 +31,18 @@ class InvitationLetterSection extends StatelessWidget {
     
     // Initialize controller with event data
     controller.initializeWithEvent(event);
+    
+    final isPhone = ScreenSize.isPhone(context);
+    final titleFontSize = isPhone ? 15.0 : 16.0;
+    final subtitleFontSize = isPhone ? 12.0 : 13.0;
+    final iconSize = isPhone ? 22.0 : 24.0;
+    final borderRadius = isPhone ? 10.0 : 12.0;
 
     return Container(
       padding: EdgeInsets.all(AppSpacing.sm(context)),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: AppColors.borderSubtle, width: 1),
         boxShadow: [
           BoxShadow(
@@ -63,11 +70,11 @@ class InvitationLetterSection extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(borderRadius),
                 ),
                 child: Icon(
                   Icons.insert_drive_file_outlined,
-                  size: 24,
+                  size: iconSize,
                   color: AppColors.primaryAccent,
                 ),
               ),
@@ -79,7 +86,7 @@ class InvitationLetterSection extends StatelessWidget {
                     Text(
                       'Invitation Letter',
                       style: GoogleFonts.inter(
-                        fontSize: 16,
+                        fontSize: titleFontSize,
                         fontWeight: AppFontWeight.semiBold,
                         color: AppColors.primary,
                         height: 1.4,
@@ -89,7 +96,7 @@ class InvitationLetterSection extends StatelessWidget {
                     Text(
                       'Upload PDF or image for email invitations',
                       style: GoogleFonts.inter(
-                        fontSize: 13,
+                        fontSize: subtitleFontSize,
                         fontWeight: AppFontWeight.regular,
                         color: AppColors.textMuted,
                         height: 1.4,
@@ -281,102 +288,114 @@ class InvitationLetterSection extends StatelessWidget {
               width: 1.5,
             ),
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // File icon with gradient background
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isPdf
-                        ? [
-                            const Color(0xFFDC2626).withOpacity(0.15),
-                            const Color(0xFFDC2626).withOpacity(0.05),
-                          ]
-                        : [
-                            AppColors.primaryAccent.withOpacity(0.15),
-                            AppColors.primaryAccent.withOpacity(0.05),
-                          ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              Row(
+                children: [
+                  // File icon with gradient background
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isPdf
+                            ? [
+                                const Color(0xFFDC2626).withOpacity(0.15),
+                                const Color(0xFFDC2626).withOpacity(0.05),
+                              ]
+                            : [
+                                AppColors.primaryAccent.withOpacity(0.15),
+                                AppColors.primaryAccent.withOpacity(0.05),
+                              ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      isPdf ? Icons.picture_as_pdf : Icons.image_outlined,
+                      size: 28,
+                      color: isPdf ? const Color(0xFFDC2626) : AppColors.primaryAccent,
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  isPdf ? Icons.picture_as_pdf : Icons.image_outlined,
-                  size: 28,
-                  color: isPdf ? const Color(0xFFDC2626) : AppColors.primaryAccent,
-                ),
-              ),
 
-              SizedBox(width: AppSpacing.xs(context)),
+                  SizedBox(width: AppSpacing.xs(context)),
 
-              // File info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                  // File info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFBBF24).withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.schedule,
-                                size: 12,
-                                color: const Color(0xFFD97706),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Ready to upload',
-                                style: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  fontWeight: AppFontWeight.semiBold,
-                                  color: const Color(0xFFD97706),
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFBBF24).withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.schedule,
+                                      size: 12,
+                                      color: const Color(0xFFD97706),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Flexible(
+                                      child: Text(
+                                        'Ready to upload',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11,
+                                          fontWeight: AppFontWeight.semiBold,
+                                          color: const Color(0xFFD97706),
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          file.name,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: AppFontWeight.medium,
+                            color: AppColors.primary,
+                            height: 1.4,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          controller.getFileSize(),
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            fontWeight: AppFontWeight.regular,
+                            color: AppColors.textMuted,
+                            height: 1.4,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      file.name,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: AppFontWeight.medium,
-                        color: AppColors.primary,
-                        height: 1.4,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      controller.getFileSize(),
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        fontWeight: AppFontWeight.regular,
-                        color: AppColors.textMuted,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
 
-              SizedBox(width: AppSpacing.xs(context)),
+              const SizedBox(height: 12),
 
-              // Action buttons
-              Row(
+              // Action buttons with Wrap
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
                 children: [
                   // Replace button
                   // _buildIconButton(
@@ -385,8 +404,6 @@ class InvitationLetterSection extends StatelessWidget {
                   //   onPressed: () => controller.pickInvitationFile(),
                   //   color: AppColors.textMuted,
                   // ),
-
-                  // const SizedBox(width: 4),
 
                   // Remove button
                   _buildIconButton(
@@ -440,123 +457,135 @@ class InvitationLetterSection extends StatelessWidget {
           width: 1.5,
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // File icon with success indicator
-          Stack(
+          Row(
             children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: isPdf
-                        ? [
-                            const Color(0xFFDC2626).withOpacity(0.15),
-                            const Color(0xFFDC2626).withOpacity(0.05),
-                          ]
-                        : [
-                            AppColors.primaryAccent.withOpacity(0.15),
-                            AppColors.primaryAccent.withOpacity(0.05),
-                          ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              // File icon with success indicator
+              Stack(
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: isPdf
+                            ? [
+                                const Color(0xFFDC2626).withOpacity(0.15),
+                                const Color(0xFFDC2626).withOpacity(0.05),
+                              ]
+                            : [
+                                AppColors.primaryAccent.withOpacity(0.15),
+                                AppColors.primaryAccent.withOpacity(0.05),
+                              ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      isPdf ? Icons.picture_as_pdf : Icons.image_outlined,
+                      size: 28,
+                      color: isPdf ? const Color(0xFFDC2626) : AppColors.primaryAccent,
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  isPdf ? Icons.picture_as_pdf : Icons.image_outlined,
-                  size: 28,
-                  color: isPdf ? const Color(0xFFDC2626) : AppColors.primaryAccent,
-                ),
+                  Positioned(
+                    top: -2,
+                    right: -2,
+                    child: Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.white, width: 2),
+                      ),
+                      child: const Icon(
+                        Icons.check,
+                        size: 12,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              Positioned(
-                top: -2,
-                right: -2,
-                child: Container(
-                  padding: const EdgeInsets.all(3),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.white, width: 2),
-                  ),
-                  child: const Icon(
-                    Icons.check,
-                    size: 12,
-                    color: Colors.white,
-                  ),
+
+              SizedBox(width: AppSpacing.xs(context)),
+
+              // File info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.cloud_done,
+                                  size: 12,
+                                  color: const Color(0xFF059669),
+                                ),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    'Uploaded Invitation Letter',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 11,
+                                      fontWeight: AppFontWeight.semiBold,
+                                      color: const Color(0xFF059669),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      controller.invitationLetterPath.value.split('/').last,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: AppFontWeight.medium,
+                        color: AppColors.primary,
+                        height: 1.4,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Ready for email invitations',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: AppFontWeight.regular,
+                        color: AppColors.textMuted,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
 
-          SizedBox(width: AppSpacing.xs(context)),
+          const SizedBox(height: 12),
 
-          // File info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF10B981).withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.cloud_done,
-                            size: 12,
-                            color: const Color(0xFF059669),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Uploaded Invitation Letter',
-                            style: GoogleFonts.inter(
-                              fontSize: 11,
-                              fontWeight: AppFontWeight.semiBold,
-                              color: const Color(0xFF059669),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  controller.invitationLetterPath.value.split('/').last,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: AppFontWeight.medium,
-                    color: AppColors.primary,
-                    height: 1.4,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Ready for email invitations',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: AppFontWeight.regular,
-                    color: AppColors.textMuted,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          SizedBox(width: AppSpacing.xs(context)),
-
-          // Action buttons
-          Row(
+          // Action buttons with Wrap
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
               // View button
               _buildIconButton(
@@ -571,8 +600,6 @@ class InvitationLetterSection extends StatelessWidget {
                 isPrimary: true,
               ),
 
-              const SizedBox(width: 4),
-
               // Download button
               _buildIconButton(
                 icon: Icons.download_outlined,
@@ -580,8 +607,6 @@ class InvitationLetterSection extends StatelessWidget {
                 onPressed: () => controller.downloadInvitationLetter(),
                 color: const Color(0xFF059669),
               ),
-
-              const SizedBox(width: 4),
 
               // Replace button
               // _buildIconButton(
@@ -591,18 +616,16 @@ class InvitationLetterSection extends StatelessWidget {
               //   color: AppColors.textMuted,
               // ),
 
-              const SizedBox(width: 4),
-
               // Delete button (hide in read-only mode)
               if (!isReadOnly)
                 Obx(() => _buildIconButton(
-                      icon: Icons.delete_outline,
-                      tooltip: 'Delete file',
-                      onPressed: controller.isUploading.value
-                          ? null
-                          : () => _confirmDelete(context, controller),
-                      color: const Color(0xFFDC2626),
-                    )),
+                    icon: Icons.delete_outline,
+                    tooltip: 'Delete file',
+                    onPressed: controller.isUploading.value
+                        ? null
+                        : () => _confirmDelete(context, controller),
+                    color: const Color(0xFFDC2626),
+                  )),
             ],
           ),
         ],

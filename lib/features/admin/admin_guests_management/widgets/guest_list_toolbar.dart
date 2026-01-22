@@ -36,12 +36,17 @@ class GuestListToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final isNarrow = MediaQuery.sizeOf(context).width < 920;
+    
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      alignment: isNarrow ? WrapAlignment.start : WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         // Search field
         SizedBox(
-          width: 280,
+          width: isNarrow ? double.infinity : 280,
           child: AppSearchInputField(
             hintText: 'Search by name or email',
             controller: controller.searchController,
@@ -53,58 +58,65 @@ class GuestListToolbar extends StatelessWidget {
           ),
         ),
 
-        // Wrap the action buttons to handle overflow on smaller screens
-        Expanded(
-          child: Wrap(
+        // Action buttons - wrapped for responsiveness
+        if (!isNarrow)
+          Wrap(
             spacing: 12,
             runSpacing: 12,
             alignment: WrapAlignment.end,
             crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              // Download Guest List button (disabled if no guests)
-              Obx(() => AppPrimaryButton(
-                    onPressed: controller.guests.isEmpty
-                        ? null
-                        : () => _downloadGuestList(context),
-                    text: 'Download Guest List',
-                    icon: Icons.download_outlined,
-                  )),
-
-              // Download Template button (hide in read-only mode)
-              if (!isReadOnly)
-                AppPrimaryButton(
-                  onPressed: () => _downloadTemplate(context),
-                  text: 'Download Template',
-                  icon: Icons.download,
-                ),
-
-              // Upload CSV/XLSX button (hide in read-only mode)
-              if (!isReadOnly)
-                AppPrimaryButton(
-                  onPressed: () => _uploadGuestsFile(context),
-                  text: 'Upload CSV',
-                  icon: Icons.upload_file,
-                ),
-
-              // Invite All button (hide in read-only mode)
-              if (!isReadOnly)
-                AppPrimaryButton(
-                  onPressed: () => _inviteAllGuests(context),
-                  text: 'Invite All',
-                  icon: Icons.send,
-                ),
-
-              // Add Guest button (hide in read-only mode)
-              if (!isReadOnly)
-                AppPrimaryButton(
-                  onPressed: () => _addGuest(context),
-                  text: '+ Add Guest',
-                ),
-            ],
+            children: _buildActionButtons(context),
           ),
-        ),
+        
+        // On narrow screens, show buttons full width
+        if (isNarrow)
+          ...(_buildActionButtons(context)),
       ],
     );
+  }
+
+  List<Widget> _buildActionButtons(BuildContext context) {
+    return [
+      // Download Guest List button (disabled if no guests)
+      Obx(() => AppPrimaryButton(
+            onPressed: controller.guests.isEmpty
+                ? null
+                : () => _downloadGuestList(context),
+            text: 'Download Guest List',
+            icon: Icons.download_outlined,
+          )),
+
+      // Download Template button (hide in read-only mode)
+      if (!isReadOnly)
+        AppPrimaryButton(
+          onPressed: () => _downloadTemplate(context),
+          text: 'Download Template',
+          icon: Icons.download,
+        ),
+
+      // Upload CSV/XLSX button (hide in read-only mode)
+      if (!isReadOnly)
+        AppPrimaryButton(
+          onPressed: () => _uploadGuestsFile(context),
+          text: 'Upload CSV',
+          icon: Icons.upload_file,
+        ),
+
+      // Invite All button (hide in read-only mode)
+      if (!isReadOnly)
+        AppPrimaryButton(
+          onPressed: () => _inviteAllGuests(context),
+          text: 'Invite All',
+          icon: Icons.send,
+        ),
+
+      // Add Guest button (hide in read-only mode)
+      if (!isReadOnly)
+        AppPrimaryButton(
+          onPressed: () => _addGuest(context),
+          text: '+ Add Guest',
+        ),
+    ];
   }
 
   void _downloadGuestList(BuildContext context) {

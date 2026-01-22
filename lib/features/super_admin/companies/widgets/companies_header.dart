@@ -107,12 +107,16 @@ class CompaniesHeader extends StatelessWidget {
             color: AppColors.primary,
           ),
           const SizedBox(width: 8),
-          AppText.styledLabelMedium(
-            context,
-            'Your Reference Code: ',
-            color: AppColors.textMuted,
+          Flexible(
+            child: Text(
+              'Your Reference Code: ',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.textMuted,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-          const SizedBox(width: 4),
           AppText.styledBodyMedium(
             context,
             refCode,

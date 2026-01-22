@@ -19,11 +19,17 @@ class VenueSelectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isPhone = ScreenSize.isPhone(context);
+    final isTablet = ScreenSize.isTablet(context);
+    
+    final cardPadding = isPhone ? 16.0 : (isTablet ? 18.0 : 20.0);
+    final borderRadius = isPhone ? 12.0 : (isTablet ? 14.0 : 16.0);
+    
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(cardPadding),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: const Color(0xFFE5E7EB)),
         boxShadow: [
           BoxShadow(
@@ -33,7 +39,7 @@ class VenueSelectionCard extends StatelessWidget {
           ),
         ],
       ),
-      child: ScreenSize.isPhone(context)
+      child: isPhone
           ? _buildPhoneLayout()
           : _buildTabletDesktopLayout(),
     );

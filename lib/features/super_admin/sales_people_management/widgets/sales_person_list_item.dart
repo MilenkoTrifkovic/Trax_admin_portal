@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:trax_admin_portal/features/super_admin/sales_people_management/controllers/sales_people_management_controller.dart';
 import 'package:trax_admin_portal/helper/app_spacing.dart';
+import 'package:trax_admin_portal/helper/screen_size.dart';
 import 'package:trax_admin_portal/models/sales_person_model.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/theme/app_font_weight.dart';
@@ -26,6 +27,297 @@ class SalesPersonListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isPhone = ScreenSize.isPhone(context);
+    final isTablet = ScreenSize.isTablet(context);
+    
+    return Container(
+      padding: EdgeInsets.all(isPhone ? 12 : 16),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: AppColors.borderSubtle.withOpacity(0.5)),
+        ),
+      ),
+      child: isPhone 
+          ? _buildMobileLayout(context) 
+          : isTablet 
+              ? _buildTabletLayout(context)
+              : _buildDesktopLayout(context),
+    );
+  }
+  
+  /// Mobile layout - card style with stacked information
+  Widget _buildMobileLayout(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Top row: Avatar, Name, Status, Actions
+        Row(
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: AppColors.primary.withOpacity(0.1),
+              child: Text(
+                salesPerson.name.isNotEmpty 
+                    ? salesPerson.name[0].toUpperCase() 
+                    : '?',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: AppFontWeight.semiBold,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    salesPerson.name,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: AppFontWeight.semiBold,
+                      color: AppColors.primary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  // Email with copy button
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          salesPerson.email,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.secondary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Clipboard.setData(ClipboardData(text: salesPerson.email));
+                          controller.copyEmail(salesPerson.email);
+                        },
+                        child: Icon(
+                          Icons.copy,
+                          size: 14,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            _buildStatusBadge(),
+          ],
+        ),
+        
+        const SizedBox(height: 12),
+        
+        // Info row: Location, Ref Code
+        Row(
+          children: [
+            Expanded(
+              child: _buildInfoChip(
+                Icons.location_on_outlined,
+                _formatLocation(salesPerson),
+              ),
+            ),
+            const SizedBox(width: 8),
+            _buildRefCodeChip(context),
+          ],
+        ),
+        
+        const SizedBox(height: 12),
+        
+        // Actions row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            TextButton.icon(
+              onPressed: onEdit,
+              icon: const Icon(Icons.edit_outlined, size: 18),
+              label: const Text('Edit'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+            ),
+            const SizedBox(width: 8),
+            TextButton.icon(
+              onPressed: onDelete,
+              icon: const Icon(Icons.delete_outline, size: 18),
+              label: const Text('Delete'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red.shade400,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+  
+  /// Build ref code chip with copy button for mobile
+  Widget _buildRefCodeChip(BuildContext context) {
+    final refCode = salesPerson.refCode ?? 'N/A';
+    final hasRefCode = salesPerson.refCode != null && salesPerson.refCode!.isNotEmpty;
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.tag,
+            size: 14,
+            color: AppColors.textMuted,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            refCode,
+            style: TextStyle(
+              fontSize: 12,
+              color: hasRefCode ? AppColors.primary : AppColors.textMuted,
+              fontWeight: hasRefCode ? AppFontWeight.semiBold : AppFontWeight.regular,
+            ),
+          ),
+          if (hasRefCode) ...[
+            const SizedBox(width: 4),
+            GestureDetector(
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: refCode));
+                controller.copyRefCode(refCode);
+              },
+              child: Icon(
+                Icons.copy,
+                size: 14,
+                color: AppColors.textMuted,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+  
+  /// Tablet layout - simplified row with key info
+  Widget _buildTabletLayout(BuildContext context) {
+    return Row(
+      children: [
+        // Avatar and Name
+        Expanded(
+          flex: 2,
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: AppColors.primary.withOpacity(0.1),
+                child: Text(
+                  salesPerson.name.isNotEmpty 
+                      ? salesPerson.name[0].toUpperCase() 
+                      : '?',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: AppFontWeight.semiBold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      salesPerson.name,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: AppFontWeight.medium,
+                        color: AppColors.primary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    // Email with copy button
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            salesPerson.email,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.secondary,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: salesPerson.email));
+                            controller.copyEmail(salesPerson.email);
+                          },
+                          child: Icon(
+                            Icons.copy,
+                            size: 14,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        // Reference Code with copy
+        Expanded(
+          flex: 1,
+          child: _buildRefCodeWithCopy(context),
+        ),
+        
+        // Status
+        Expanded(
+          flex: 1,
+          child: _buildStatusBadge(),
+        ),
+        
+        // Actions
+        SizedBox(
+          width: 80,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 20),
+                color: AppColors.primary,
+                onPressed: onEdit,
+                tooltip: 'Edit',
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, size: 20),
+                color: Colors.red.shade400,
+                onPressed: onDelete,
+                tooltip: 'Delete',
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+  
+  /// Desktop layout - full row with all columns
+  Widget _buildDesktopLayout(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -240,6 +532,38 @@ class SalesPersonListItem extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+  
+  /// Build info chip for mobile layout
+  Widget _buildInfoChip(IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 14,
+            color: AppColors.textMuted,
+          ),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.secondary,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
