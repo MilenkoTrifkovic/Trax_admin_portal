@@ -22,24 +22,39 @@ class _SignInScreenWidgetState extends State<SignInScreenWidget> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final AuthController authController = Get.find<AuthController>();
+
   late final SnackbarMessageController snackbarController;
+  late final SignInController controller;
+
+  final List<Worker> _workers = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    snackbarController = Get.find<SnackbarMessageController>();
+
+    controller = Get.isRegistered<SignInController>()
+        ? Get.find<SignInController>()
+        : Get.put(SignInController());
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setupListeners();
+    });
+  }
 
   @override
   void dispose() {
+    for (final w in _workers) {
+      w.dispose();
+    }
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  @override
-  void initState() {
-    super.initState();
-    snackbarController = Get.find<SnackbarMessageController>();
-  }
-
-  Future<void> _handleEmailPasswordAuth(SignInController controller) async {
+  Future<void> _handleEmailPasswordAuth() async {
     if (!_formKey.currentState!.validate()) return;
 
     await controller.handleEmailPasswordAuth(
@@ -48,13 +63,14 @@ class _SignInScreenWidgetState extends State<SignInScreenWidget> {
     );
   }
 
-  Future<void> _handleForgotPassword(SignInController controller) async {
+  Future<void> _handleForgotPassword() async {
     await controller.handleForgotPassword(_emailController.text.trim());
   }
 
-  void _clearFormAndToggleMode(SignInController controller) {
+  void _clearFormAndToggleMode() {
     controller.toggleSignUpMode();
-    // Clear form when switching modes
+    controller.usePassword.value =
+        false; // ✅ reset password section if you add it in UI
     _emailController.clear();
     _passwordController.clear();
     _confirmPasswordController.clear();
@@ -62,44 +78,36 @@ class _SignInScreenWidgetState extends State<SignInScreenWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // Initialize the controller
-  final controller = Get.put(SignInController());
-
-  // Setup listeners for messages and navigation
-  _setupListeners(controller, context);
-
     return SingleChildScrollView(
-      child: SizedBox(
-        width: 400,
-        child: Card(
-          elevation: 0,
-          color: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.all(32.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header Section
-                SignInHeader(controller: controller),
-
-                // Form Section
-                SignInForm(
-                  controller: controller,
-                  formKey: _formKey,
-                  emailController: _emailController,
-                  passwordController: _passwordController,
-                  confirmPasswordController: _confirmPasswordController,
-                  onSubmit: () => _handleEmailPasswordAuth(controller),
-                  onForgotPassword: () => _handleForgotPassword(controller),
-                ),
-
-                // Toggle Section
-                // SignInToggle(
-                //   controller: controller,
-                //   onToggle: () => _clearFormAndToggleMode(controller),
-                // ),
-              ],
+      child: Center(
+        child: SizedBox(
+          width: 400,
+          child: Card(
+            elevation: 0,
+            color: Colors.white,
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SignInHeader(controller: controller),
+                  SignInForm(
+                    controller: controller,
+                    formKey: _formKey,
+                    emailController: _emailController,
+                    passwordController: _passwordController,
+                    confirmPasswordController: _confirmPasswordController,
+                    onSubmit: _handleEmailPasswordAuth,
+                    onForgotPassword: _handleForgotPassword,
+                  ),
+                  const SizedBox(height: 12),
+                  SignInToggle(
+                    controller: controller,
+                    onToggle: _clearFormAndToggleMode,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -107,75 +115,60 @@ class _SignInScreenWidgetState extends State<SignInScreenWidget> {
     );
   }
 
-  /// Setup all GetX listeners for messages and navigation
-  /// Setup all GetX listeners for messages and navigation
-  void _setupListeners(SignInController controller, BuildContext context) {
-  // use snackbarController initialized in initState
-    // Watch for success messages
-    ever(controller.successMessage, (String? message) {
+  void _setupListeners() {
+    _workers.add(ever(controller.successMessage, (String? message) {
       if (message != null && message.isNotEmpty) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           snackbarController.showSuccessMessage(message);
           controller.clearSuccessMessage();
         });
       }
-    });
+    }));
 
-    // Watch for error messages
-    ever(controller.errorMessage, (String? message) {
+    _workers.add(ever(controller.errorMessage, (String? message) {
       if (message != null && message.isNotEmpty) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           snackbarController.showErrorMessage(message);
           controller.clearErrorMessage();
         });
       }
-    });
+    }));
 
-    // 🔥 Go to email verification after signup / signin (if not verified)
-    ever(controller.shouldNavigateToEmailVerification, (bool shouldNavigate) {
-      if (shouldNavigate) {
+    _workers.add(ever(controller.shouldNavigateToEmailVerification, (bool go) {
+      if (go) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          print('UI: Navigating to email verification');
           pushAndRemoveAllRoute(AppRoute.emailVerification, context);
           controller.clearNavigationFlags();
         });
       }
-    });
+    }));
 
-    // 🔥 Go to organisation info after verified signin but no org
-    ever(controller.shouldNavigateToOrganisationInfo, (bool shouldNavigate) {
-      if (shouldNavigate) {
+    _workers.add(ever(controller.shouldNavigateToOrganisationInfo, (bool go) {
+      if (go) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          print('UI: Navigating to organisation info form');
-          pushAndRemoveAllRoute(
-            AppRoute.hostOrganisationInfoForm,
-            context,
-          );
+          pushAndRemoveAllRoute(AppRoute.hostOrganisationInfoForm, context);
           controller.clearNavigationFlags();
         });
       }
-    });
+    }));
 
-    // 🔥 Go directly to host events when verified + has org
-    ever(controller.shouldNavigateToHostEvents, (bool shouldNavigate) {
-      if (shouldNavigate) {
+    _workers.add(ever(controller.shouldNavigateToHostEvents, (bool go) {
+      if (go) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          print('UI: Navigating to host events');
           pushAndRemoveAllRoute(AppRoute.hostEvents, context);
           controller.clearNavigationFlags();
         });
       }
-    });
+    }));
 
-    // 🔥 Go to sales person dashboard when user is a sales person
-    ever(controller.shouldNavigateToSalesPersonDashboard, (bool shouldNavigate) {
-      if (shouldNavigate) {
+    _workers
+        .add(ever(controller.shouldNavigateToSalesPersonDashboard, (bool go) {
+      if (go) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          print('UI: Navigating to sales person dashboard');
           pushAndRemoveAllRoute(AppRoute.salesPersonDashboard, context);
           controller.clearNavigationFlags();
         });
       }
-    });
+    }));
   }
 }
