@@ -27,6 +27,19 @@ class SignInForm extends StatelessWidget {
     required this.onForgotPassword,
   });
 
+  ButtonStyle _oauthBtnStyle(BuildContext context, {bool primary = false}) {
+    return OutlinedButton.styleFrom(
+      minimumSize: const Size.fromHeight(44),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      side: BorderSide(color: AppColors.primary.withOpacity(0.35)),
+      backgroundColor: primary ? AppColors.primary : Colors.transparent,
+      foregroundColor: primary ? Colors.white : AppColors.primary,
+      textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -46,6 +59,78 @@ class SignInForm extends StatelessWidget {
           ),
 
           const SizedBox(height: 16),
+
+          // -----------------------
+          // OAuth buttons (Sign in / Sign up)
+          // -----------------------
+          Obx(() {
+            final isSignUp = controller.isSignUpMode.value;
+            final isBusy = controller.isLoading.value;
+
+            return Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    style: _oauthBtnStyle(context, primary: true),
+                    onPressed: isBusy ? null : controller.signInWithGoogle,
+                    child: Text(
+                      isSignUp ? 'Sign up with Google' : 'Sign in with Google',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    style: _oauthBtnStyle(context),
+                    onPressed: isBusy ? null : controller.signInWithMicrosoft,
+                    child: Text(
+                      isSignUp
+                          ? 'Sign up with Microsoft'
+                          : 'Sign in with Microsoft',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    style: _oauthBtnStyle(context),
+                    onPressed: isBusy ? null : controller.signInWithApple,
+                    child: Text(
+                      isSignUp ? 'Sign up with Apple' : 'Sign in with Apple',
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }),
+
+          const SizedBox(height: 18),
+
+          // Divider: OR
+          Row(
+            children: [
+              Expanded(
+                child: Divider(color: Colors.grey.withOpacity(0.25)),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'or',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textMuted,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Divider(color: Colors.grey.withOpacity(0.25)),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 18),
 
           // Password Field
           Obx(() => TextFormField(
@@ -76,47 +161,41 @@ class SignInForm extends StatelessWidget {
 
           // Confirm Password Field (only show in sign up mode)
           Obx(() {
-            if (controller.isSignUpMode.value) {
-              return Column(
-                children: [
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: confirmPasswordController,
-                    decoration: InputDecoration(
-                      labelText: 'Confirm Password',
-                      hintText: 'Confirm your password',
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          controller.isConfirmPasswordVisible.value
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: controller.toggleConfirmPasswordVisibility,
+            if (!controller.isSignUpMode.value) return const SizedBox.shrink();
+
+            return Column(
+              children: [
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: confirmPasswordController,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    hintText: 'Confirm your password',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        controller.isConfirmPasswordVisible.value
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
+                      onPressed: controller.toggleConfirmPasswordVisibility,
                     ),
-                    obscureText: !controller.isConfirmPasswordVisible.value,
-                    textInputAction: TextInputAction.done,
-                    validator: (value) =>
-                        ValidationHelper.validateConfirmPassword(
-                      value,
-                      passwordController.text,
-                    ),
-                    onFieldSubmitted: (_) {
-                      if (controller.isSignUpMode.value) {
-                        onSubmit();
-                      }
-                    },
                   ),
-                ],
-              );
-            } else {
-              return const SizedBox.shrink();
-            }
+                  obscureText: !controller.isConfirmPasswordVisible.value,
+                  textInputAction: TextInputAction.done,
+                  validator: (value) =>
+                      ValidationHelper.validateConfirmPassword(
+                    value,
+                    passwordController.text,
+                  ),
+                  onFieldSubmitted: (_) => onSubmit(),
+                ),
+              ],
+            );
           }),
 
           const SizedBox(height: 24),
 
-          // Sign In/Up Button
+          // Sign In/Up Button (email/password)
           Obx(() => SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
@@ -125,58 +204,33 @@ class SignInForm extends StatelessWidget {
                       ? const SizedBox(
                           height: 16,
                           width: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : Text(controller.isSignUpMode.value
-                          ? 'Create account'
-                          : 'Sign in'),
+                      : Text(
+                          controller.isSignUpMode.value
+                              ? 'Create account'
+                              : 'Sign in',
+                        ),
                 ),
               )),
 
           // Forgot Password (only show in sign in mode)
           Obx(() {
-            if (!controller.isSignUpMode.value) {
-              return Column(
-                children: [
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: onForgotPassword,
-                    child: Text(
-                      'Forgot your password?',
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
+            if (controller.isSignUpMode.value) return const SizedBox.shrink();
+
+            return Column(
+              children: [
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: onForgotPassword,
+                  child: Text(
+                    'Forgot your password?',
+                    style: Theme.of(context).textTheme.labelLarge,
                   ),
-                ],
-              );
-            } else {
-              return const SizedBox.shrink();
-            }
+                ),
+              ],
+            );
           }),
-
-          const SizedBox(height: 24),
-
-          // Subtle guest login link - only visible if accessed accidentally
-          // Center(
-          //   child: TextButton(
-          //     onPressed: () {
-          //       pushRoute(AppRoute.guestLogin, context);
-          //     },
-          //     style: TextButton.styleFrom(
-          //       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          //       minimumSize: Size.zero,
-          //       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          //     ),
-          //     child: AppText.styledBodySmall(
-          //       context,
-          //       'Guest login',
-          //       color: AppColors.textMuted,
-          //       decoration: TextDecoration.underline,
-          //     ),
-          //   ),
-          // ),
 
           const SizedBox(height: 16),
         ],
