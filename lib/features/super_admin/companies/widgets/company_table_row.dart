@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trax_admin_portal/controller/auth_controller/auth_controller.dart';
+import 'package:trax_admin_portal/controller/global_controllers/payments_controller.dart';
 import 'package:trax_admin_portal/helper/app_padding.dart';
 import 'package:trax_admin_portal/helper/app_spacing.dart';
 import 'package:trax_admin_portal/models/company_summary.dart';
@@ -17,6 +18,7 @@ class CompanyTableRow extends StatelessWidget {
   final int index;
   final AuthController authController;
   final FirestoreServices firestoreServices;
+  final PaymentsController paymentsController;
 
   const CompanyTableRow({
     super.key,
@@ -24,12 +26,13 @@ class CompanyTableRow extends StatelessWidget {
     required this.index,
     required this.authController,
     required this.firestoreServices,
+    required this.paymentsController,
   });
 
   @override
   Widget build(BuildContext context) {
     final isEven = index.isEven;
-    
+
     return InkWell(
       onTap: () => _handleTap(context),
       child: Container(
@@ -53,6 +56,12 @@ class CompanyTableRow extends StatelessWidget {
 
             // Total Events
             _buildEventCount(context),
+
+            // Purchased Events
+            _buildPurchasedEvents(context),
+
+            // Remaining Events
+            _buildRemainingEvents(context),
 
             // Actions
             _buildActions(context),
@@ -148,9 +157,80 @@ class CompanyTableRow extends StatelessWidget {
           company.eventCount.toString(),
           textAlign: TextAlign.center,
           weight: FontWeight.w600,
-          color: company.eventCount > 0
-              ? AppColors.primary
-              : AppColors.textMuted,
+          color:
+              company.eventCount > 0 ? AppColors.primary : AppColors.textMuted,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPurchasedEvents(BuildContext context) {
+    final purchasedEvents = paymentsController
+        .getTotalEventsForOrganisation(company.organisationId);
+
+    return Expanded(
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm(context),
+          vertical: AppSpacing.xxs(context),
+        ),
+        decoration: BoxDecoration(
+          color: purchasedEvents > 0
+              ? AppColors.success.withOpacity(0.1)
+              : AppColors.textMuted.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: AppText.styledBodySmall(
+          context,
+          purchasedEvents.toString(),
+          textAlign: TextAlign.center,
+          weight: FontWeight.w600,
+          color: purchasedEvents > 0 ? AppColors.success : AppColors.textMuted,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRemainingEvents(BuildContext context) {
+    final purchasedEvents = paymentsController
+        .getTotalEventsForOrganisation(company.organisationId);
+    final usedEvents = company.eventCount;
+    final remainingEvents = purchasedEvents - usedEvents;
+
+    // Determine color based on remaining events
+    Color bgColor;
+    Color textColor;
+    if (remainingEvents > 10) {
+      bgColor = AppColors.success.withOpacity(0.1);
+      textColor = AppColors.success;
+    } else if (remainingEvents > 0) {
+      bgColor = Colors.orange.withOpacity(0.1);
+      textColor = Colors.orange;
+    } else if (remainingEvents == 0) {
+      bgColor = AppColors.textMuted.withOpacity(0.1);
+      textColor = AppColors.textMuted;
+    } else {
+      // Negative - exceeded limit
+      bgColor = AppColors.inputError.withOpacity(0.1);
+      textColor = AppColors.inputError;
+    }
+
+    return Expanded(
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm(context),
+          vertical: AppSpacing.xxs(context),
+        ),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: AppText.styledBodySmall(
+          context,
+          remainingEvents.toString(),
+          textAlign: TextAlign.center,
+          weight: FontWeight.w600,
+          color: textColor,
         ),
       ),
     );
@@ -169,7 +249,8 @@ class CompanyTableRow extends StatelessWidget {
 
   Future<void> _handleTap(BuildContext context) async {
     try {
-      final org = await firestoreServices.getOrganisation(company.organisationId);
+      final org =
+          await firestoreServices.getOrganisation(company.organisationId);
       authController.setSelectedOrganisation(org);
       if (context.mounted) {
         // Redirect based on user role
@@ -186,7 +267,8 @@ class CompanyTableRow extends StatelessWidget {
 
   Future<void> _handleAction(BuildContext context) async {
     try {
-      final org = await firestoreServices.getOrganisation(company.organisationId);
+      final org =
+          await firestoreServices.getOrganisation(company.organisationId);
       authController.setSelectedOrganisation(org);
       if (context.mounted) {
         // Redirect based on user role

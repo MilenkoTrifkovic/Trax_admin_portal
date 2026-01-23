@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:trax_admin_portal/controller/auth_controller/auth_controller.dart';
+import 'package:trax_admin_portal/controller/global_controllers/payments_controller.dart';
 import 'package:trax_admin_portal/features/super_admin/companies/controllers/companies_controller.dart';
 import 'package:trax_admin_portal/features/super_admin/companies/widgets/company_card.dart';
 import 'package:trax_admin_portal/features/super_admin/companies/widgets/company_table_row.dart';
@@ -31,6 +32,8 @@ class CompaniesContent extends StatelessWidget {
   }
 
   Widget _buildCardList(BuildContext context) {
+    final paymentsController = Get.find<PaymentsController>();
+
     return Obx(() {
       return ListView.builder(
         itemCount: controller.filteredCompanies.length,
@@ -40,6 +43,7 @@ class CompaniesContent extends StatelessWidget {
             company: company,
             authController: authController,
             firestoreServices: firestoreServices,
+            paymentsController: paymentsController,
           );
         },
       );
@@ -47,6 +51,8 @@ class CompaniesContent extends StatelessWidget {
   }
 
   Widget _buildDataTable(BuildContext context) {
+    final paymentsController = Get.find<PaymentsController>();
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -76,6 +82,7 @@ class CompaniesContent extends StatelessWidget {
                     index: index,
                     authController: authController,
                     firestoreServices: firestoreServices,
+                    paymentsController: paymentsController,
                   );
                 },
               );
@@ -121,6 +128,24 @@ class CompaniesContent extends StatelessWidget {
               context,
               'Total Events',
               'events',
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(
+            child: AppText.styledLabelMedium(
+              context,
+              'Purchased',
+              color: AppColors.primary,
+              weight: FontWeight.w600,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(
+            child: AppText.styledLabelMedium(
+              context,
+              'Remaining',
+              color: AppColors.primary,
+              weight: FontWeight.w600,
               textAlign: TextAlign.center,
             ),
           ),

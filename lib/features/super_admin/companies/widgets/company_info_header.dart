@@ -1,26 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:trax_admin_portal/controller/global_controllers/payments_controller.dart';
 import 'package:trax_admin_portal/features/super_admin/companies/widgets/company_header.dart';
-import 'package:trax_admin_portal/features/super_admin/companies/widgets/info_card.dart';
+import 'package:trax_admin_portal/features/super_admin/companies/widgets/events_stats_card.dart';
 import 'package:trax_admin_portal/features/super_admin/companies/widgets/salesperson_card.dart';
+import 'package:trax_admin_portal/features/super_admin/companies/widgets/transaction_history_widget.dart';
 import 'package:trax_admin_portal/features/super_admin/global_controllers/sales_people_global_controller.dart';
 import 'package:trax_admin_portal/features/super_admin/super_admin_events/controllers/super_admin_event_list_controller.dart';
 import 'package:trax_admin_portal/helper/app_padding.dart';
 import 'package:trax_admin_portal/helper/app_spacing.dart';
 import 'package:trax_admin_portal/helper/screen_size.dart';
 import 'package:trax_admin_portal/models/company_summary.dart';
-import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/utils/enums/sizes.dart';
 
 /// Widget displaying company information header with event count and salesperson
-/// 
+///
 /// Can be used in two ways:
 /// 1. With controller: Pass SuperAdminEventListController and callbacks are automatic
 /// 2. Without controller: Pass manual callbacks for assign/remove operations
 class CompanyInfoHeader extends StatefulWidget {
   final CompanySummary companySummary;
   final VoidCallback? onBackPressed;
-  final Future<void> Function(String organisationId, String salesPersonId)? onAssignSalesPerson;
+  final Future<void> Function(String organisationId, String salesPersonId)?
+      onAssignSalesPerson;
   final Future<void> Function(String organisationId)? onRemoveSalesPerson;
   final SuperAdminEventListController? controller;
 
@@ -38,10 +40,24 @@ class CompanyInfoHeader extends StatefulWidget {
 }
 
 class _CompanyInfoHeaderState extends State<CompanyInfoHeader> {
+  bool _isTransactionHistoryExpanded = false;
+
   @override
   Widget build(BuildContext context) {
     final salesPeopleController = Get.find<SalesPeopleGlobalController>();
+    final paymentsController = Get.find<PaymentsController>();
     final isPhone = ScreenSize.isPhone(context);
+    final isDesktop = ScreenSize.isDesktop(context);
+
+    // Get payment data for this organisation
+    final transactions = paymentsController.getPaymentsForOrganisation(
+      widget.companySummary.organisationId,
+    );
+    final purchasedEvents = paymentsController.getTotalEventsForOrganisation(
+      widget.companySummary.organisationId,
+    );
+    final totalEvents = widget.companySummary.eventCount;
+    final remainingEvents = purchasedEvents - totalEvents;
 
     return Container(
       padding: isPhone
@@ -82,25 +98,54 @@ class _CompanyInfoHeaderState extends State<CompanyInfoHeader> {
           const Divider(),
           AppSpacing.verticalLg(context),
 
-          // Info cards - make both cards match height
-          isPhone
-              ? _buildMobileInfoCards(context, salesPeopleController)
-              : _buildDesktopInfoCards(context, salesPeopleController),
+          // Info cards - Events stats and Salesperson (stacked on phone/tablet, side-by-side on desktop)
+          isDesktop
+              ? _buildDesktopInfoCards(
+                  context,
+                  salesPeopleController,
+                  totalEvents,
+                  purchasedEvents,
+                  remainingEvents,
+                )
+              : _buildMobileInfoCards(
+                  context,
+                  salesPeopleController,
+                  totalEvents,
+                  purchasedEvents,
+                  remainingEvents,
+                ),
+
+          AppSpacing.verticalLg(context),
+
+          // Transaction History
+          TransactionHistoryWidget(
+            transactions: transactions,
+            isExpanded: _isTransactionHistoryExpanded,
+            onToggleExpand: () {
+              setState(() {
+                _isTransactionHistoryExpanded = !_isTransactionHistoryExpanded;
+              });
+            },
+          ),
         ],
       ),
     );
   }
 
   Widget _buildMobileInfoCards(
-      BuildContext context, SalesPeopleGlobalController salesPeopleController) {
+    BuildContext context,
+    SalesPeopleGlobalController salesPeopleController,
+    int totalEvents,
+    int purchasedEvents,
+    int remainingEvents,
+  ) {
     return Column(
       children: [
-        // Total Events Card
-        InfoCard(
-          icon: Icons.event,
-          label: 'Total Events',
-          value: widget.companySummary.eventCount.toString(),
-          color: AppColors.primary,
+        // Events Stats Card
+        EventsStatsCard(
+          totalEvents: totalEvents,
+          purchasedEvents: purchasedEvents,
+          remainingEvents: remainingEvents,
         ),
         AppSpacing.verticalMd(context),
         // Salesperson Card
@@ -114,19 +159,23 @@ class _CompanyInfoHeaderState extends State<CompanyInfoHeader> {
   }
 
   Widget _buildDesktopInfoCards(
-      BuildContext context, SalesPeopleGlobalController salesPeopleController) {
+    BuildContext context,
+    SalesPeopleGlobalController salesPeopleController,
+    int totalEvents,
+    int purchasedEvents,
+    int remainingEvents,
+  ) {
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Total Events Card
+          // Events Stats Card
           Expanded(
             child: SizedBox.expand(
-              child: InfoCard(
-                icon: Icons.event,
-                label: 'Total Events',
-                value: widget.companySummary.eventCount.toString(),
-                color: AppColors.primary,
+              child: EventsStatsCard(
+                totalEvents: totalEvents,
+                purchasedEvents: purchasedEvents,
+                remainingEvents: remainingEvents,
               ),
             ),
           ),
@@ -145,6 +194,4 @@ class _CompanyInfoHeaderState extends State<CompanyInfoHeader> {
       ),
     );
   }
-
-
 }

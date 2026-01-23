@@ -1,0 +1,99 @@
+// functions/getOrganisationPayments.js
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { db } from "./admin.js";
+
+/**
+ * Cloud function to fetch payments/transactions for specified organisations.
+ * 
+ * Request data:
+ * - organisationIds: Array of organisation IDs to fetch payments for
+ * 
+ * Returns:
+ * - payments: Map of organisationId to array of payment documents
+ */
+export const getOrganisationPayments = onCall(async (request) => {
+  // Verify user is authenticated
+  if (!request.auth?.uid) {
+    throw new HttpsError("unauthenticated", "Sign in required");
+  }
+
+  const organisationIds = request.data?.organisationIds;
+
+  if (!organisationIds || !Array.isArray(organisationIds) || organisationIds.length === 0) {
+    throw new HttpsError("invalid-argument", "organisationIds array is required");
+  }
+
+  // Check if user has permission to view payments
+  // User must be either a super admin or belong to one of the organisations
+  const userSnap = await db.collection("users").doc(request.auth.uid).get();
+  const user = userSnap.exists ? (userSnap.data() || {}) : {};
+  const userRole = (user.role || "").toString().trim();
+  const userOrgId = (user.organisationId || "").toString().trim();
+
+  const isSuperAdmin = userRole === "super_admin";
+
+  // Check if user is a salesperson
+  const currentUserEmail = request.auth.token.email || "";
+  const salesPersonQuery = await db.collection("sales_people")
+    .where("email", "==", currentUserEmail)
+    .limit(1)
+    .get();
+  
+  const isSalesPerson = !salesPersonQuery.empty && 
+    salesPersonQuery.docs[0].data().isActive === true && 
+    salesPersonQuery.docs[0].data().isDisabled !== true;
+
+  // Regular users can only view their own organisation's payments
+  if (!isSuperAdmin && !isSalesPerson) {
+    if (!userOrgId || !organisationIds.includes(userOrgId)) {
+      throw new HttpsError("permission-denied", "You don't have permission to view these payments");
+    }
+    // Filter to only include user's own organisation
+    organisationIds.length = 0;
+    organisationIds.push(userOrgId);
+  }
+
+  try {
+    // Firestore 'in' queries are limited to 30 items, so we need to batch
+    const batchSize = 30;
+    const payments = {};
+
+    // Initialize empty arrays for all requested organisation IDs
+    for (const orgId of organisationIds) {
+      payments[orgId] = [];
+    }
+
+    // Process in batches
+    for (let i = 0; i < organisationIds.length; i += batchSize) {
+      const batch = organisationIds.slice(i, i + batchSize);
+      
+      const querySnapshot = await db.collection("payments")
+        .where("organisationId", "in", batch)
+        .orderBy("createdAt", "desc")
+        .get();
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const orgId = data.organisationId;
+        
+        if (orgId && payments[orgId] !== undefined) {
+          payments[orgId].push({
+            id: doc.id,
+            ...data,
+          });
+        }
+      });
+    }
+
+    console.log(`Fetched payments for ${organisationIds.length} organisations`);
+
+    return {
+      success: true,
+      payments: payments,
+    };
+
+  } catch (error) {
+    console.error("Error fetching payments:", error);
+    throw new HttpsError("internal", "Failed to fetch payments: " + error.message);
+  }
+});

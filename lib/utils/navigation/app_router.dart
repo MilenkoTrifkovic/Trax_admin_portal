@@ -8,6 +8,7 @@ import 'package:trax_admin_portal/controller/common_controllers/event_list_contr
 import 'package:trax_admin_portal/controller/global_controllers/events_controller.dart';
 import 'package:trax_admin_portal/controller/global_controllers/guest_controllers/guest_session_controller.dart';
 import 'package:trax_admin_portal/controller/global_controllers/organisation_controller.dart';
+import 'package:trax_admin_portal/controller/global_controllers/payments_controller.dart';
 import 'package:trax_admin_portal/controller/global_controllers/users_and_roles_controller.dart';
 import 'package:trax_admin_portal/controller/global_controllers/venues_controller.dart';
 import 'package:trax_admin_portal/controller/menus_list_controller.dart';
@@ -498,6 +499,16 @@ GoRouter buildRouter() {
               }
               if (!Get.isRegistered<EventsController>()) {
                 Get.put(EventsController());
+              }
+
+              // Initialize PaymentsController for super admin with all organisation IDs
+              if (!Get.isRegistered<PaymentsController>()) {
+                final organisationIds = authController.organisations
+                    .map((org) => org.organisationId)
+                    .whereType<String>()
+                    .toList();
+                Get.put(PaymentsController(organisationIds), permanent: true);
+                print('✅ Initialized PaymentsController with ${organisationIds.length} organisations');
               }
 
               // Get the appropriate header for the current route
