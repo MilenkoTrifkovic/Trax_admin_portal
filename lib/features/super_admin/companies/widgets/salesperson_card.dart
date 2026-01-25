@@ -158,7 +158,7 @@ class SalespersonCard extends StatelessWidget {
                     value: sp.docId,
                     child: Text(sp.name),
                   );
-                }).toList(),
+                }),
               ];
 
               return Column(

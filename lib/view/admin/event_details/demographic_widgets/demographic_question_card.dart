@@ -146,7 +146,7 @@ class DemographicQuestionCard extends StatelessWidget {
             IgnorePointer(
               ignoring: readOnly,
               child: DropdownButtonFormField<String>(
-                value: selected,
+                initialValue: selected,
                 isExpanded: true,
                 decoration: InputDecoration(
                   isDense: true,

@@ -340,7 +340,7 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
           color: AppColors.textMuted,
         ),
         value: _isActive,
-        activeColor: AppColors.success,
+        activeThumbColor: AppColors.success,
         onChanged: (bool value) {
           setState(() {
             _isActive = value;
@@ -441,7 +441,7 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: _selectedState,
+          initialValue: _selectedState,
           decoration: InputDecoration(
             hintText: 'Select state',
             hintStyle: TextStyle(
@@ -501,7 +501,7 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
-          value: _selectedCountry,
+          initialValue: _selectedCountry,
           decoration: InputDecoration(
             hintText: 'Select country',
             hintStyle: TextStyle(

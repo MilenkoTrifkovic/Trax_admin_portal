@@ -3,9 +3,6 @@ import 'package:get/get.dart';
 import 'package:trax_admin_portal/controller/auth_controller/sign_in_controller.dart';
 import 'package:trax_admin_portal/helper/validation_helper.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
-import 'package:trax_admin_portal/theme/styled_app_text.dart';
-import 'package:trax_admin_portal/utils/navigation/app_routes.dart';
-import 'package:trax_admin_portal/utils/navigation/routes.dart';
 
 class SignInForm extends StatelessWidget {
   final SignInController controller;

@@ -98,6 +98,7 @@ class PaymentsController extends GetxController {
   }
 
   /// Refreshes payments data
+  @override
   Future<void> refresh() async {
     await loadPayments();
   }

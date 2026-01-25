@@ -120,7 +120,7 @@ class _CompaniesFiltersState extends State<CompaniesFilters> {
     return Obx(() {
       final salesPeople = widget.controller.getUniqueSalesPeople();
       return DropdownButtonFormField<String>(
-        value: widget.controller.selectedSalesPersonFilter.value,
+        initialValue: widget.controller.selectedSalesPersonFilter.value,
         decoration: InputDecoration(
           labelText: 'Filter by Salesperson',
           border: const OutlineInputBorder(),

@@ -23,20 +23,20 @@ class SignInScreenWidget extends StatelessWidget {
         actions: [
           AuthStateChangeAction<UserCreated>((context, state) async {
             final user = FirebaseAuth.instance.currentUser;
-
             if (user != null && !user.emailVerified) {
               pushAndRemoveAllRoute(AppRoute.emailVerification, context);
             } else {
-              pushAndRemoveAllRoute(AppRoute.hostEvents, context);
+              // Always go to welcome, let router handle role-based redirect
+              pushAndRemoveAllRoute(AppRoute.welcome, context);
             }
           }),
           AuthStateChangeAction<SignedIn>((context, state) async {
             final user = FirebaseAuth.instance.currentUser;
-
             if (user != null && !user.emailVerified) {
               pushAndRemoveAllRoute(AppRoute.emailVerification, context);
             } else {
-              pushAndRemoveAllRoute(AppRoute.hostEvents, context);
+              // Always go to welcome, let router handle role-based redirect
+              pushAndRemoveAllRoute(AppRoute.welcome, context);
             }
           }),
         ],

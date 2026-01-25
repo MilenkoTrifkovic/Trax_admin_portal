@@ -14,9 +14,7 @@ import 'package:trax_admin_portal/utils/enums/sizes.dart';
 import 'package:trax_admin_portal/utils/enums/user_type.dart';
 import 'package:trax_admin_portal/utils/navigation/app_routes.dart';
 import 'package:trax_admin_portal/utils/navigation/routes.dart';
-import 'package:trax_admin_portal/view/admin/create_event/create_event_popup_view.dart';
 import 'package:trax_admin_portal/view/common/widgets/event_card.dart';
-import 'package:trax_admin_portal/widgets/empty_state.dart';
 import 'package:trax_admin_portal/widgets/no_events_state.dart';
 
 /// A widget that displays a scrollable list of events using EventCard widgets.
@@ -72,35 +70,12 @@ class _SuperAdminListOfEventsState extends State<SuperAdminListOfEvents> {
       }
 
       if (controller.filteredEvents.isEmpty && controller.events.isEmpty) {
-        // Check if user is super admin viewing an organization
-        final isSuperAdmin =
-            authController.userRole.value == UserRole.superAdmin;
-            final isSalesPerson = 
-                authController.userRole.value == UserRole.salesPerson;
-
-        if (isSuperAdmin || isSalesPerson) {
-          // Show read-only state for super admin
-          return SizedBox(
-            height: MediaQuery.of(context).size.height - 200,
-            child: NoEventsState(
-              organizationName: authController.organisation.value?.name,
-            ),
-          );
-        }
-
-        // Show actionable empty state for regular admin
+        // Super admins and sales persons have read-only access
+        // Show no events state when there are no events in the selected organization
         return SizedBox(
           height: MediaQuery.of(context).size.height - 200,
-          child: EmptyState(
-            title: 'Welcome to Trax',
-            description: 'Lets create your first event',
-            buttonText: 'Add First Event',
-            onButtonPressed: () {
-              showDialog(
-                context: context,
-                builder: (_) => CreateEventPopupView(),
-              );
-            },
+          child: NoEventsState(
+            organizationName: authController.organisation.value?.name,
           ),
         );
       }
@@ -169,7 +144,7 @@ class _SuperAdminListOfEventsState extends State<SuperAdminListOfEvents> {
                     controller.selectedEvent.value = event;
                     eventController.setSelectedEvent(event);
 
-                    // Super admins and sales people use their own event details routes
+                    // Navigate to appropriate event details route based on user role
                     if (authController.userRole.value == UserRole.superAdmin) {
                       pushAndRemoveAllRoute(
                         AppRoute.superAdminEventDetails,
@@ -181,20 +156,6 @@ class _SuperAdminListOfEventsState extends State<SuperAdminListOfEvents> {
                         AppRoute.salesPersonEventDetails,
                         context,
                         urlParam: event.eventId,
-                      );
-                    } else if (authController.userRole.value ==
-                        UserRole.admin) {
-                      pushAndRemoveAllRoute(
-                        AppRoute.eventDetails,
-                        context,
-                        urlParam: event.eventId,
-                      );
-                    } else {
-                      pushRoute(
-                        AppRoute.guestEventDetails,
-                        context,
-                        urlParam: event.eventId,
-                        extra: event,
                       );
                     }
                   },

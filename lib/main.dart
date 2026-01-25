@@ -8,13 +8,10 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:trax_admin_portal/controller/auth_controller/auth_controller.dart';
 import 'package:trax_admin_portal/controller/common_controllers/event_controller.dart';
 import 'package:trax_admin_portal/controller/common_controllers/event_list_controller.dart';
-import 'package:trax_admin_portal/controller/admin_controllers/host_controller.dart';
-import 'package:trax_admin_portal/controller/global_controllers/guest_controllers/guest_session_controller.dart';
 import 'package:trax_admin_portal/controller/global_controllers/snackbar_message_controller.dart';
 import 'package:trax_admin_portal/services/shared_pref_services.dart';
 import 'package:trax_admin_portal/services/storage_services.dart';
 import 'package:trax_admin_portal/services/cloud_functions_services.dart';
-import 'package:trax_admin_portal/services/guest_firestore_services.dart';
 import 'package:trax_admin_portal/theme/app_theme.dart';
 import 'package:trax_admin_portal/utils/navigation/app_router.dart';
 import 'package:trax_admin_portal/services/firestore_services/firestore_services.dart';
@@ -51,21 +48,13 @@ Future<void> main() async {
   Get.lazyPut<StorageServices>(() => StorageServices(), fenix: true);
   Get.lazyPut<CloudFunctionsService>(() => CloudFunctionsService(),
       fenix: true);
-  Get.lazyPut<GuestFirestoreServices>(() => GuestFirestoreServices(),
-      fenix: true);
   Get.lazyPut<EventListController>(() => EventListController(), fenix: true);
-  Get.lazyPut<HostController>(() => HostController(), fenix: true);
 
   Get.put<EventController>(EventController(), permanent: true);
 
-  // Initialize GuestSessionController to restore session if exists
-  // This must happen BEFORE router is created so redirect guards can check authentication
-  // Using putAsync ensures async session restoration completes before routing starts
-  await Get.putAsync(() => GuestSessionController().init(), permanent: true);
-
   final authController = Get.find<AuthController>();
 
-  // 🔄 read userRole + organisationId from /users/{uid} if logged in
+  // Load user profile to determine role (super admin or sales person)
   await authController.loadUserProfile();
 
   runApp(MyApp());

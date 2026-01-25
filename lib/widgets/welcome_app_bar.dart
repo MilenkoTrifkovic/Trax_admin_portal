@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
-import 'package:trax_admin_portal/theme/styled_app_text.dart';
-import 'package:trax_admin_portal/helper/app_spacing.dart';
+// Removed unused imports after About/Contact navigation removal
 import 'package:trax_admin_portal/utils/navigation/app_routes.dart';
 import 'package:trax_admin_portal/utils/constantsOld.dart';
 import 'package:trax_admin_portal/utils/navigation/routes.dart';
@@ -33,25 +32,7 @@ AppBar welcomeAppBar(BuildContext context) {
             children: [
               Row(
                 children: [
-                  GestureDetector(
-                      onTap: () {
-                        pushAndRemoveAllRoute(AppRoute.aboutView, context);
-                      },
-                      child: AppText.styledBodyMedium(context, 'About',
-                          color: AppColors.primaryOld(context),
-                          weight: FontWeight.bold)),
-                  AppSpacing.horizontalXs(context),
-                  AppText.styledBodyMedium(context, '|',
-                      color: AppColors.primaryOld(context),
-                      weight: FontWeight.bold),
-                  AppSpacing.horizontalXs(context),
-                  GestureDetector(
-                      onTap: () {
-                        pushAndRemoveAllRoute(AppRoute.contactView, context);
-                      },
-                      child: AppText.styledBodyMedium(context, 'Contact',
-                          color: AppColors.primaryOld(context),
-                          weight: FontWeight.bold)),
+                  // Removed About and Contact navigation (only super admin/sales allowed)
                 ],
               )
             ],

@@ -41,15 +41,15 @@ class EmailVerificationListeners extends StatelessWidget {
       }
     });
 
-    // Watch for navigation to host events
-    ever(controller.shouldNavigateToHostEvents, (bool shouldNavigate) {
-      if (shouldNavigate) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          pushAndRemoveAllRoute(AppRoute.hostOrganisationInfoForm, context);
-          controller.clearNavigationFlags();
-        });
-      }
-    });
+    // // Watch for navigation to host events
+    // ever(controller.shouldNavigateToHostEvents, (bool shouldNavigate) {
+    //   if (shouldNavigate) {
+    //     WidgetsBinding.instance.addPostFrameCallback((_) {
+    //       pushAndRemoveAllRoute(AppRoute.hostOrganisationInfoForm, context);
+    //       controller.clearNavigationFlags();
+    //     });
+    //   }
+    // });
 
     // Watch for navigation to login
     ever(controller.shouldNavigateToLogin, (bool shouldNavigate) {

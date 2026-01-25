@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:trax_admin_portal/controller/global_controllers/events_controller.dart';
 import 'package:trax_admin_portal/models/guest_model.dart';
-import 'package:trax_admin_portal/services/cloud_functions_services.dart';
 import 'package:trax_admin_portal/services/firestore_services/firestore_services.dart';
 import 'package:trax_admin_portal/services/parsers/file_parser/guest_model_csv_parser.dart';
 import 'package:trax_admin_portal/services/parsers/file_parser/guest_model_xlsx_parser.dart';
@@ -134,8 +133,9 @@ class AdminGuestListController extends GetxController {
         (eventData['selectedDemographicQuestionSetId'] ?? '').toString();
 
     if (orgId.isEmpty) throw Exception('Event.organisationId missing');
-    if (setId.isEmpty)
+    if (setId.isEmpty) {
       throw Exception('Event.selectedDemographicQuestionSetId missing');
+    }
 
     final invRef = FirebaseFirestore.instance.collection('invitations').doc();
     final invId = invRef.id;

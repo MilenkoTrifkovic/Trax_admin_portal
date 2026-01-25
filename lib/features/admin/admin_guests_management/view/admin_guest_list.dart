@@ -156,7 +156,7 @@ class GuestListSection extends StatelessWidget {
                       constraints: BoxConstraints(minWidth: tableWidth),
                       child: DataTable(
                         headingRowColor:
-                            MaterialStateProperty.all(Colors.grey.shade50),
+                            WidgetStateProperty.all(Colors.grey.shade50),
                         dividerThickness: 1,
                         columns: const [
                           DataColumn(

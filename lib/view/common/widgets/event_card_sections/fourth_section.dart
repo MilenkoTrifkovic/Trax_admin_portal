@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:trax_admin_portal/models/event.dart';
-import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/theme/app_font_weight.dart';
 import 'package:trax_admin_portal/theme/styled_app_text.dart';
 import 'package:trax_admin_portal/utils/enums/event_status.dart';

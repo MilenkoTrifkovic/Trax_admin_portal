@@ -1,21 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:trax_admin_portal/features/admin/admin_user_management/widgets/admin_user_management_header.dart';
-import 'package:trax_admin_portal/layout/headers/calendar_header.dart';
-import 'package:trax_admin_portal/layout/headers/event_list_header.dart';
-import 'package:trax_admin_portal/layout/headers/host_event_details_header.dart';
-import 'package:trax_admin_portal/layout/headers/guest_side_preview_header.dart';
-import 'package:trax_admin_portal/layout/headers/menus_management_header.dart';
-import 'package:trax_admin_portal/layout/headers/settings_header.dart';
-import 'package:trax_admin_portal/layout/headers/venues_management_header.dart';
-import 'package:trax_admin_portal/layout/headers/questions_management_header.dart';
 import 'package:trax_admin_portal/utils/navigation/app_routes.dart';
 import 'package:trax_admin_portal/widgets/app_bar_custom.dart';
 
 /// Returns the header widget for a given route state.
 /// 
-/// Uses [GoRouterState.of(context)] to get the current location for accurate
-/// header resolution, especially when navigating within shell routes.
+/// For super admin and sales person portal - simplified header resolution
 Widget getPageHeader(GoRouterState state, {BuildContext? context}) {
   // Use context-based state if available for more accurate location
   final location = context != null 
@@ -24,71 +14,15 @@ Widget getPageHeader(GoRouterState state, {BuildContext? context}) {
   
   print('Header resolver - location: $location');
   
-  // Check for event list pages
-  if (location == AppRoute.hostEvents.path) {
-    return AppBarCustom(content: EventListHeader());
-  }
-  
+  // Super admin and sales person don't need headers for event list pages
   if (location == AppRoute.superAdminEvents.path) {
     return const SizedBox.shrink();
-    return AppBarCustom(content: EventListHeader());
   }
   
   if (location == AppRoute.salesPersonEvents.path) {
     return const SizedBox.shrink();
-    return AppBarCustom(content: EventListHeader());
   }
   
-  // Check for guest preview page first (before event details check)
-  if (location.contains('/guest-preview')) {
-    print('GUEST preview page found');
-    final eventId = state.pathParameters[AppRoute.guestSidePreview.placeholder] 
-        ?? _extractEventIdFromPath(location);
-    if (eventId != null) {
-      return AppBarCustom(content: GuestSidePreviewHeader(eventId: eventId));
-    }
-  }
-  
-  // Check for event details page
-  if (location.startsWith('/event-details/') && !location.contains('/guest-preview')) {
-    return AppBarCustom(content: HostEventDetailsHeader());
-  }
-  
-  // Check for super admin event details
-  if (location.startsWith('/super-admin-event-details/')) {
-    return AppBarCustom(content: HostEventDetailsHeader());
-  }
-  
-  // Check for sales person event details
-  if (location.startsWith('/sales-person-event-details/')) {
-    return AppBarCustom(content: HostEventDetailsHeader());
-  }
-  
-  if (location == AppRoute.calendarView.path) {
-    return AppBarCustom(content: CalendarHeader());
-  }
-  if (location == AppRoute.hostVenues.path) {
-    return AppBarCustom(content: VenuesManagementHeader());
-  }
-  if (location == AppRoute.hostMenus.path) {
-    return AppBarCustom(content: MenusManagementHeader());
-  }
-  if (location == AppRoute.hostRoleSelection.path) {
-    return AppBarCustom(content: AdminUserManagementHeader());
-  }
-  if (location == AppRoute.hostQuestionSets.path ||
-      location.startsWith('/host-question-sets/') ||
-      location == AppRoute.hostQuestions.path) {
-    return AppBarCustom(content: QuestionsManagementHeader());
-  }
-
-  if (location == AppRoute.hostQuestions.path) {
-    return AppBarCustom(content: QuestionsManagementHeader());
-  }
-
-  if (location == AppRoute.hostSettings.path) {
-    return AppBarCustom(content: SettingsHeader());
-  }
 
   return const SizedBox.shrink();
 }

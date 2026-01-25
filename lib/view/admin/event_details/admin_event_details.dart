@@ -259,14 +259,14 @@ class DemographicQuestionsPanelBody extends StatelessWidget {
                 color: Colors.grey,
               ),
               const SizedBox(height: 16),
-              if (!controller.isReadOnly)
-                ElevatedButton.icon(
-                  onPressed: () {
-                    context.push(AppRoute.hostQuestionSets.path);
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text("Create Demographic Questions"),
-                )
+              // if (!controller.isReadOnly)
+              //   ElevatedButton.icon(
+              //     onPressed: () {
+              //       context.push(AppRoute.hostQuestionSets.path);
+              //     },
+              //     icon: const Icon(Icons.add),
+              //     label: const Text("Create Demographic Questions"),
+              //   )
             ],
           ),
         );
@@ -349,18 +349,18 @@ class DemographicQuestionsPanelBody extends StatelessWidget {
                   color: Colors.grey.shade700,
                   weight: FontWeight.w600,
                 ),
-                if (!controller.isReadOnly)
-                  TextButton.icon(
-                    onPressed: () {
-                      context.push(AppRoute.hostQuestionSets.path);
-                    },
-                    icon: const Icon(Icons.settings, size: 18),
-                    label: const Text('Manage Sets'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.primary,
-                      textStyle: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ),
+                // if (!controller.isReadOnly)
+                //   TextButton.icon(
+                //     onPressed: () {
+                //       context.push(AppRoute.hostQuestionSets.path);
+                //     },
+                //     icon: const Icon(Icons.settings, size: 18),
+                //     label: const Text('Manage Sets'),
+                //     style: TextButton.styleFrom(
+                //       foregroundColor: AppColors.primary,
+                //       textStyle: const TextStyle(fontWeight: FontWeight.w600),
+                //     ),
+                //   ),
               ],
             ),
             const SizedBox(height: 8),
@@ -1157,7 +1157,7 @@ class MenuSelectionCard extends StatelessWidget {
       double priceOf(MenuItem item) {
         final p = item.price;
         if (p == null) return 0.0;
-        if (p is num) return p.toDouble();
+        return p.toDouble();
         return double.tryParse(p.toString()) ?? 0.0;
       }
 
@@ -1332,9 +1332,7 @@ class MenuSelectionCard extends StatelessWidget {
     final price = item.price;
     final double p = (price == null)
         ? 0.0
-        : (price is num
-            ? price.toDouble()
-            : double.tryParse(price.toString()) ?? 0.0);
+        : (price.toDouble());
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -1588,7 +1586,7 @@ class _MenuAndItemsDialogState extends State<MenuAndItemsDialog> {
   double _priceOf(MenuItem item) {
     final p = item.price;
     if (p == null) return 0.0;
-    if (p is num) return p.toDouble();
+    return p.toDouble();
     return double.tryParse(p.toString()) ?? 0.0;
   }
 
@@ -1807,7 +1805,7 @@ class _MenuAndItemsDialogState extends State<MenuAndItemsDialog> {
   Widget build(BuildContext context) {
     final menus = widget.controller.availableMenus;
 
-    String _norm(String s) =>
+    String norm(String s) =>
         s.replaceAll(RegExp(r'[\s_\-]'), '').toLowerCase();
 
     // LEFT menu categories based on current menu
@@ -2048,7 +2046,7 @@ class _MenuAndItemsDialogState extends State<MenuAndItemsDialog> {
                                     SizedBox(
                                       width: 260,
                                       child: DropdownButtonFormField<String?>(
-                                        value: _leftCategory,
+                                        initialValue: _leftCategory,
                                         hint: Text('Category',
                                             style: GoogleFonts.poppins()),
                                         items: [
@@ -2409,8 +2407,9 @@ class _MenuAndItemsDialogState extends State<MenuAndItemsDialog> {
                                   final it = _selectedCache[id];
                                   if (it == null) {
                                     // show loading cards only when no right filters are applied
-                                    if (!rightFiltersActive)
+                                    if (!rightFiltersActive) {
                                       visibleSelectedIds.add(id);
+                                    }
                                     continue;
                                   }
                                   if (match(it)) visibleSelectedIds.add(id);
@@ -2499,7 +2498,7 @@ class _MenuAndItemsDialogState extends State<MenuAndItemsDialog> {
                                             width: 260,
                                             child: DropdownButtonFormField<
                                                 String?>(
-                                              value: _rightCategory,
+                                              initialValue: _rightCategory,
                                               hint: Text('Category',
                                                   style: GoogleFonts.poppins()),
                                               items: [
@@ -2911,13 +2910,15 @@ class _MenuAndItemsDialogState extends State<MenuAndItemsDialog> {
                                                       await widget.controller
                                                           .applyMenuSelection(
                                                               _selectedOrder);
-                                                      if (mounted)
+                                                      if (mounted) {
                                                         Navigator.of(context)
                                                             .pop();
+                                                      }
                                                     } finally {
-                                                      if (mounted)
+                                                      if (mounted) {
                                                         setState(() =>
                                                             _saving = false);
+                                                      }
                                                     }
                                                   },
                                             style: ElevatedButton.styleFrom(
@@ -3158,21 +3159,21 @@ class DemographicSelectionCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                if (!controller.isReadOnly)
-                  IconButton(
-                    tooltip: selectedSet == null
-                        ? 'Select question set'
-                        : 'Change selection',
-                    icon: Icon(
-                        selectedSet == null ? Icons.add : Icons.edit_outlined),
-                    onPressed: () {
-                      if (questions.isEmpty) {
-                        context.push(AppRoute.hostQuestionSets.path);
-                        return;
-                      }
-                      _openDialog(context);
-                    },
-                  ),
+                // if (!controller.isReadOnly)
+                //   IconButton(
+                //     tooltip: selectedSet == null
+                //         ? 'Select question set'
+                //         : 'Change selection',
+                //     icon: Icon(
+                //         selectedSet == null ? Icons.add : Icons.edit_outlined),
+                //     onPressed: () {
+                //       if (questions.isEmpty) {
+                //         context.push(AppRoute.hostQuestionSets.path);
+                //         return;
+                //       }
+                //       _openDialog(context);
+                //     },
+                //   ),
               ],
             ),
             const SizedBox(height: 8),
@@ -3185,12 +3186,12 @@ class DemographicSelectionCard extends StatelessWidget {
                   color: const Color(0xFF6B7280),
                 ),
               ),
-              const SizedBox(height: 8),
-              if (!controller.isReadOnly)
-                TextButton(
-                  onPressed: () => context.push(AppRoute.hostQuestionSets.path),
-                  child: const Text('Create demographic questions'),
-                ),
+              // const SizedBox(height: 8),
+              // if (!controller.isReadOnly)
+              //   TextButton(
+              //     onPressed: () => context.push(AppRoute.hostQuestionSets.path),
+              //     child: const Text('Create demographic questions'),
+              //   ),
             ] else if (selectedSet == null) ...[
               Text(
                 'Please select a question set for this event.',
@@ -3252,7 +3253,7 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
   Map<String, dynamic>? _data;
   DateTime? _loadedAt;
 
-  bool _showAllMenu = false;
+  final bool _showAllMenu = false;
 
   @override
   void initState() {
@@ -3277,8 +3278,8 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
   List<Map<String, dynamic>> _asMapList(dynamic v) {
     if (v is List) {
       return v
-          .where((e) => e is Map)
-          .map((e) => Map<String, dynamic>.from(e as Map))
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
           .toList();
     }
     return <Map<String, dynamic>>[];

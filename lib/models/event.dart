@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:map_location_picker/map_location_picker.dart';
-import 'package:trax_admin_portal/forms/create_event/event_form_state.dart';
 import 'package:trax_admin_portal/utils/enums/event_type.dart';
 import 'package:trax_admin_portal/utils/enums/event_status.dart';
 import 'package:trax_admin_portal/utils/enums/menu_category.dart';
@@ -180,129 +179,7 @@ class Event {
     );
   }
 
-  /// Creates an Event instance from the form state
-  ///
-  /// Assumptions about EventFormState:
-  ///  - nameController: TextEditingController
-  ///  - addressController: TextEditingController
-  ///  - capacityController: TextEditingController (numeric)
-  ///  - serviceType: String or ServiceType (form stores string like 'buffet'/'plated')
-  ///  - date: DateTime?
-  ///  - startTime: TimeOfDay?
-  ///  - endTime: TimeOfDay?
-  ///  - rsvpDeadline: DateTime?
-  ///  - selectedEventType: String?
-  ///  - selectedTimezone: String?
-  ///  - selectedLocation: LatLng? (optional)
-  ///  - selectedVenue: Venue-like object with id (required)
-  ///  - coverImage: XFile?
-  ///  - descriptionController, dressCodeController, plannerEmailController, specialNotesController: TextEditingController
-  ///  - hideHostInfo: bool
-  ///  - selectableMenuCategories: List<MenuCategory>?
-  ///  - selectedMenus: List<String>?
-  factory Event.fromFormState(EventFormState state, String organisationId) {
-    // Basic validation — throw useful errors early if critical data missing
-    if (state.selectedVenue == null) {
-      throw ArgumentError('selectedVenue must be provided in the form state');
-    }
-    if (state.date == null) {
-      throw ArgumentError('date must be provided in the form state');
-    }
-    if (state.startTime == null || state.endTime == null) {
-      throw ArgumentError(
-          'startTime and endTime must be provided in the form state');
-    }
 
-    // Parse capacity safely
-    int parsedCapacity = 0;
-    try {
-      parsedCapacity = state.capacityController.text.trim().isNotEmpty == true
-          ? int.parse(state.capacityController.text.trim())
-          : 0;
-    } catch (_) {
-      parsedCapacity = 0;
-    }
-
-    // ServiceType: accept either a string (enum name) or ServiceType value from the form
-    ServiceType parsedServiceType;
-    if (state.serviceType is ServiceType) {
-      parsedServiceType = state.serviceType as ServiceType;
-    } else if (state.serviceType is String) {
-      parsedServiceType = ServiceType.values.firstWhere(
-          (e) => e.name == (state.serviceType as String),
-          orElse: () => ServiceType.buffet);
-    } else {
-      parsedServiceType = ServiceType.buffet;
-    }
-
-    // Compose DateTimes for start/end using date + startTime/endTime from form
-    final date = state.date!;
-    final dynamic selVenue = state.selectedVenue;
-    final String venueId;
-    if (selVenue == null) {
-      throw ArgumentError('selectedVenue must be provided in the form state');
-    } else if (selVenue is String) {
-      venueId = selVenue;
-    } else if (selVenue is Map) {
-      venueId = selVenue['id'] as String;
-    } else {
-      // assume object with .id
-      venueId = (selVenue.id as String);
-    }
-    final startDateTime = DateTime(
-      date.year,
-      date.month,
-      date.day,
-      state.startTime!.hour,
-      state.startTime!.minute,
-    );
-    final endDateTime = DateTime(
-      date.year,
-      date.month,
-      date.day,
-      state.endTime!.hour,
-      state.endTime!.minute,
-    );
-
-    return Event(
-      organisationId: organisationId,
-      venueId: venueId,
-      serviceType: parsedServiceType,
-      name: state.nameController.text.trim() ?? '',
-      address: state.addressController.text.trim() ?? '',
-      capacity: parsedCapacity,
-      date: DateTime(date.year, date.month, date.day),
-      startTime: state.startTime!,
-      endTime: state.endTime!,
-      rsvpDeadline: state.rsvpDeadline ?? DateTime.now(),
-      eventType: state.selectedEventType ?? '',
-      timezone: state.selectedTimezone ?? 'UTC',
-      location: state.selectedLocation,
-      status: EventStatus.draft,
-      coverImage: state.coverImage,
-      description: state.descriptionController.text.trim().isNotEmpty == true
-          ? state.descriptionController.text.trim()
-          : null,
-      dressCode: state.dressCodeController.text.trim().isNotEmpty == true
-          ? state.dressCodeController.text.trim()
-          : null,
-      plannerEmail: state.plannerEmailController.text.trim().isNotEmpty == true
-          ? state.plannerEmailController.text.trim()
-          : null,
-      specialNotes: state.specialNotesController.text.trim().isNotEmpty == true
-          ? state.specialNotesController.text.trim()
-          : null,
-      hideHostInfo: state.hideHostInfo ?? false,
-      maxInviteByGuest: state.maxInviteByGuest ?? 0,
-      selectableCategories:
-          state.selectableMenuCategories ?? const <MenuCategory>[],
-      selectedMenus: state.selectedMenus,
-      // new fields (optional initial values from form)
-      selectedMenuId: state.selectedMenuId,
-      selectedMenuItemIds: state.selectedMenuItemIds,
-      selectedDemographicQuestionSetId: state.selectedDemographicQuestionSetId,
-    );
-  }
 
   /// Converts the Event instance to a JSON map for Firestore storage
   Map<String, dynamic> toJson() {

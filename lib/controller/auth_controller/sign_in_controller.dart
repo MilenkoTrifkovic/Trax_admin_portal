@@ -33,6 +33,7 @@ class SignInController extends GetxController {
   final shouldNavigateToOrganisationInfo = false.obs;
   final shouldNavigateToHostEvents = false.obs;
   final shouldNavigateToSalesPersonDashboard = false.obs;
+  final shouldNavigateToSuperAdminDashboard = false.obs;
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
@@ -193,6 +194,12 @@ class SignInController extends GetxController {
       return;
     }
 
+    // ✅ super admin routing
+    if (_authController.isSuperAdmin) {
+      shouldNavigateToSuperAdminDashboard.value = true;
+      return;
+    }
+
     // ✅ only require email verification for password users
     final signedInWithPassword =
         user.providerData.any((p) => p.providerId == 'password');
@@ -228,10 +235,11 @@ class SignInController extends GetxController {
 
   // Helpers
   void _resetNavigationFlags() {
-    shouldNavigateToHostEvents.value = false;
-    shouldNavigateToEmailVerification.value = false;
-    shouldNavigateToOrganisationInfo.value = false;
-    shouldNavigateToSalesPersonDashboard.value = false;
+  shouldNavigateToHostEvents.value = false;
+  shouldNavigateToEmailVerification.value = false;
+  shouldNavigateToOrganisationInfo.value = false;
+  shouldNavigateToSalesPersonDashboard.value = false;
+  shouldNavigateToSuperAdminDashboard.value = false;
   }
 
   void clearNavigationFlags() {

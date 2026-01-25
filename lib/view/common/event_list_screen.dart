@@ -6,7 +6,6 @@ import 'package:trax_admin_portal/helper/app_spacing.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/utils/enums/sizes.dart';
 import 'package:trax_admin_portal/view/common/widgets/event_filter_section.dart';
-import 'package:trax_admin_portal/view/common/widgets/event_list_header_old.dart';
 import 'package:trax_admin_portal/view/common/widgets/list_of_events.dart';
 
 /// A screen that displays a list of events for the host user.

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:trax_admin_portal/controller/auth_controller/auth_controller.dart';
 import 'package:trax_admin_portal/controller/auth_controller/sign_in_controller.dart';
+import 'package:trax_admin_portal/controller/auth_controller/auth_controller.dart';
 import 'package:trax_admin_portal/utils/navigation/app_routes.dart';
 import 'package:trax_admin_portal/utils/navigation/routes.dart';
 import 'package:trax_admin_portal/controller/global_controllers/snackbar_message_controller.dart';
@@ -116,6 +116,14 @@ class _SignInScreenWidgetState extends State<SignInScreenWidget> {
   }
 
   void _setupListeners() {
+    _workers.add(ever(controller.shouldNavigateToSuperAdminDashboard, (bool go) {
+      if (go) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          pushAndRemoveAllRoute(AppRoute.superAdminDashboard, context);
+          controller.clearNavigationFlags();
+        });
+      }
+    }));
     _workers.add(ever(controller.successMessage, (String? message) {
       if (message != null && message.isNotEmpty) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -143,29 +151,34 @@ class _SignInScreenWidgetState extends State<SignInScreenWidget> {
       }
     }));
 
-    _workers.add(ever(controller.shouldNavigateToOrganisationInfo, (bool go) {
-      if (go) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          pushAndRemoveAllRoute(AppRoute.hostOrganisationInfoForm, context);
-          controller.clearNavigationFlags();
-        });
-      }
-    }));
+    // _workers.add(ever(controller.shouldNavigateToOrganisationInfo, (bool go) {
+    //   if (go) {
+    //     WidgetsBinding.instance.addPostFrameCallback((_) {
+    //       pushAndRemoveAllRoute(AppRoute.hostOrganisationInfoForm, context);
+    //       controller.clearNavigationFlags();
+    //     });
+    //   }
+    // }));
 
-    _workers.add(ever(controller.shouldNavigateToHostEvents, (bool go) {
-      if (go) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          pushAndRemoveAllRoute(AppRoute.hostEvents, context);
-          controller.clearNavigationFlags();
-        });
-      }
-    }));
+    // _workers.add(ever(controller.shouldNavigateToHostEvents, (bool go) {
+    //   if (go) {
+    //     WidgetsBinding.instance.addPostFrameCallback((_) {
+    //       pushAndRemoveAllRoute(AppRoute.hostEvents, context);
+    //       controller.clearNavigationFlags();
+    //     });
+    //   }
+    // }));
 
-    _workers
-        .add(ever(controller.shouldNavigateToSalesPersonDashboard, (bool go) {
+    _workers.add(ever(controller.shouldNavigateToSalesPersonDashboard, (bool go) {
       if (go) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          pushAndRemoveAllRoute(AppRoute.salesPersonDashboard, context);
+          // Check user role and push to correct dashboard
+          final authController = Get.find<AuthController>();
+          if (authController.isSuperAdmin) {
+            pushAndRemoveAllRoute(AppRoute.superAdminDashboard, context);
+          } else if (authController.isSalesPerson) {
+            pushAndRemoveAllRoute(AppRoute.salesPersonDashboard, context);
+          }
           controller.clearNavigationFlags();
         });
       }
