@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:trax_admin_portal/controller/auth_controller/auth_controller.dart';
 import 'package:trax_admin_portal/controller/global_controllers/payments_controller.dart';
 import 'package:trax_admin_portal/features/super_admin/companies/widgets/assign_free_credits_dialog.dart';
 import 'package:trax_admin_portal/features/super_admin/companies/widgets/company_header.dart';
@@ -133,12 +134,25 @@ class _CompanyInfoHeaderState extends State<CompanyInfoHeader> {
                   _isTransactionHistoryExpanded = !_isTransactionHistoryExpanded;
                 });
               },
-              onGiveFreeEvents: () => _showAssignFreeCreditsDialog(context),
+              // Only super admins can give free events
+              onGiveFreeEvents: _isSuperAdmin() 
+                  ? () => _showAssignFreeCreditsDialog(context)
+                  : null,
             ),
           ],
         );
       }),
     );
+  }
+
+  /// Check if current user is super admin
+  bool _isSuperAdmin() {
+    try {
+      final authController = Get.find<AuthController>();
+      return authController.isSuperAdmin;
+    } catch (e) {
+      return false;
+    }
   }
 
   Widget _buildInfoCards(
