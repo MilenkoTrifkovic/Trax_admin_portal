@@ -17,3 +17,4 @@ export { submitMenuSelection } from "./submitMenuSelection.js";
 export { getEventAnalytics } from "./getEventAnalytics.js";
 export { createSalesPersonAccount } from "./createSalesPersonAccount.js";
 export { getOrganisationPayments } from "./getOrganisationPayments.js";
+export { assignFreeCredits } from "./assignFreeCredits.js";

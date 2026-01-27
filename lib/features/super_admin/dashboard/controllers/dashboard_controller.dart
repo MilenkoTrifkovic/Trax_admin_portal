@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:trax_admin_portal/controller/auth_controller/auth_controller.dart';
+import 'package:trax_admin_portal/controller/global_controllers/snackbar_message_controller.dart';
 import 'package:trax_admin_portal/services/dashboard_services.dart';
 
 /// Controller for managing dashboard state and data
@@ -45,11 +46,8 @@ class DashboardController extends GetxController {
       
     } catch (e) {
       print('Error loading dashboard data: $e');
-      Get.snackbar(
-        'Error',
-        'Failed to load dashboard data',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      final snackbarController = Get.find<SnackbarMessageController>();
+      snackbarController.showErrorMessage('Failed to load dashboard data');
     } finally {
       isLoading.value = false;
     }

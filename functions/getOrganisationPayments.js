@@ -79,7 +79,32 @@ export const getOrganisationPayments = onCall(async (request) => {
         if (orgId && payments[orgId] !== undefined) {
           payments[orgId].push({
             id: doc.id,
-            ...data,
+            transactionId: data.transactionId,
+            organisationId: data.organisationId,
+            organisationName: data.organisationName || null,
+            events: data.events,
+            amount: data.amount,
+            currency: data.currency || 'usd',
+            paymentStatus: data.paymentStatus,
+            packageName: data.packageName,
+            productName: data.productName,
+            userEmail: data.userEmail,
+            userId: data.userId,
+            // Timestamps - convert Firestore timestamps to ISO strings
+            createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
+            modifiedAt: data.modifiedAt?.toDate?.()?.toISOString() || data.modifiedAt,
+            isDisabled: data.isDisabled || false,
+            // Free credit fields
+            isAssignedBySuperAdmin: data.isAssignedBySuperAdmin || false,
+            isFreeCredit: data.isFreeCredit || false,
+            assignedByEmail: data.assignedByEmail || null,
+            assignedByName: data.assignedByName || null,
+            assignedByUserId: data.assignedByUserId || null,
+            note: data.note || null,
+            // Stripe fields (null for free credits)
+            paymentIntentId: data.paymentIntentId || null,
+            stripeCustomerId: data.stripeCustomerId || null,
+            receiptUrl: data.receiptUrl || null,
           });
         }
       });

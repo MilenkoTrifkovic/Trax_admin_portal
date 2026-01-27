@@ -134,10 +134,10 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // Set initial collapsed state for phones
+    // Set initial collapsed state for phones and tablets
     if (!_initialStateSet) {
       _initialStateSet = true;
-      if (ScreenSize.isPhone(context)) {
+      if (ScreenSize.isPhone(context) || ScreenSize.isTablet(context)) {
         _isExpanded = false;
       }
     }
@@ -154,9 +154,9 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
     final String location = GoRouterState.of(context).uri.path;
     final int selectedIndex = _selectedIndexForLocation(location);
 
-    // Auto-collapse on phone screens
-    final bool isPhone = ScreenSize.isPhone(context);
-    final bool shouldBeExpanded = isPhone ? _isExpanded : _isExpanded;
+    // Auto-collapse on phone and tablet screens - use overlay layout
+    final bool isPhoneOrTablet = ScreenSize.isPhone(context) || ScreenSize.isTablet(context);
+    final bool shouldBeExpanded = _isExpanded;
 
     final items = <NavItemData>[
       const NavItemData(
@@ -210,8 +210,8 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
       child: widget.child,
     );
 
-    // On phone: Stack layout (overlay) | On larger screens: Row layout (push)
-    if (isPhone) {
+    // On phone and tablet: Stack layout (overlay) | On desktop: Row layout (push)
+    if (isPhoneOrTablet) {
       return Stack(
         children: [
           // Content with left padding when collapsed (pushes content)

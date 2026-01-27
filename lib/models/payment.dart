@@ -16,12 +16,21 @@ class Payment {
   final String? paymentMethod;
   final String? paymentStatus;
   final String? productName;
+  final String? packageName;
   final String? receiptUrl;
   final String? stripeCustomerId;
   final String? subscriptionId;
   final String? transactionId;
   final String? userEmail;
   final String? userId;
+
+  // Free credit fields
+  final bool isAssignedBySuperAdmin;
+  final bool isFreeCredit;
+  final String? assignedByEmail;
+  final String? assignedByName;
+  final String? assignedByUserId;
+  final String? note;
 
   Payment({
     this.id,
@@ -38,13 +47,23 @@ class Payment {
     this.paymentMethod,
     this.paymentStatus,
     this.productName,
+    this.packageName,
     this.receiptUrl,
     this.stripeCustomerId,
     this.subscriptionId,
     this.transactionId,
     this.userEmail,
     this.userId,
+    this.isAssignedBySuperAdmin = false,
+    this.isFreeCredit = false,
+    this.assignedByEmail,
+    this.assignedByName,
+    this.assignedByUserId,
+    this.note,
   });
+
+  /// Check if this is a free credit (assigned by super admin)
+  bool get isFree => isAssignedBySuperAdmin || isFreeCredit || amount == 0;
 
   factory Payment.fromJson(Map<String, dynamic> json, {String? docId}) {
     return Payment(
@@ -65,12 +84,20 @@ class Payment {
       paymentMethod: json['paymentMethod'] as String?,
       paymentStatus: json['paymentStatus'] as String?,
       productName: json['productName'] as String?,
+      packageName: json['packageName'] as String?,
       receiptUrl: json['receiptUrl'] as String?,
       stripeCustomerId: json['stripeCustomerId'] as String?,
       subscriptionId: json['subscriptionId'] as String?,
       transactionId: json['transactionId'] as String?,
       userEmail: json['userEmail'] as String?,
       userId: json['userId'] as String?,
+      // Free credit fields
+      isAssignedBySuperAdmin: json['isAssignedBySuperAdmin'] as bool? ?? false,
+      isFreeCredit: json['isFreeCredit'] as bool? ?? false,
+      assignedByEmail: json['assignedByEmail'] as String?,
+      assignedByName: json['assignedByName'] as String?,
+      assignedByUserId: json['assignedByUserId'] as String?,
+      note: json['note'] as String?,
     );
   }
 
@@ -92,6 +119,25 @@ class Payment {
     return null;
   }
 
+  /// Display type for the transaction
+  String get displayType => isFree ? 'Free Credit' : 'Purchase';
+
+  /// Display source - who made the payment or who assigned the credit
+  String get displaySource {
+    if (isAssignedBySuperAdmin) {
+      return 'Gifted by ${assignedByName ?? assignedByEmail ?? 'Super Admin'}';
+    }
+    return userEmail ?? 'Unknown';
+  }
+
+  /// Display package name with fallback
+  String get displayPackageName {
+    if (isFree) {
+      return 'Free Events';
+    }
+    return packageName ?? productName ?? 'Event Package';
+  }
+
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
@@ -108,17 +154,27 @@ class Payment {
       if (paymentMethod != null) 'paymentMethod': paymentMethod,
       if (paymentStatus != null) 'paymentStatus': paymentStatus,
       if (productName != null) 'productName': productName,
+      if (packageName != null) 'packageName': packageName,
       if (receiptUrl != null) 'receiptUrl': receiptUrl,
       if (stripeCustomerId != null) 'stripeCustomerId': stripeCustomerId,
       if (subscriptionId != null) 'subscriptionId': subscriptionId,
       if (transactionId != null) 'transactionId': transactionId,
       if (userEmail != null) 'userEmail': userEmail,
       if (userId != null) 'userId': userId,
+      'isAssignedBySuperAdmin': isAssignedBySuperAdmin,
+      'isFreeCredit': isFreeCredit,
+      if (assignedByEmail != null) 'assignedByEmail': assignedByEmail,
+      if (assignedByName != null) 'assignedByName': assignedByName,
+      if (assignedByUserId != null) 'assignedByUserId': assignedByUserId,
+      if (note != null) 'note': note,
     };
   }
 
   /// Formatted amount with currency
   String get formattedAmount {
+    if (isFree) {
+      return 'Free';
+    }
     final currencySymbol = _getCurrencySymbol(currency);
     // Amount is in cents, convert to dollars
     final amountInDollars = amount / 100;

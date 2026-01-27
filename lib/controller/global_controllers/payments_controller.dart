@@ -120,6 +120,22 @@ class PaymentsController extends GetxController {
     return payments.fold(0, (sum, payment) => sum + payment.events);
   }
 
+  /// Gets the total events purchased (not gifted) by an organisation
+  int getPurchasedEventsForOrganisation(String organisationId) {
+    final payments = getPaymentsForOrganisation(organisationId);
+    return payments
+        .where((payment) => !payment.isFree)
+        .fold(0, (sum, payment) => sum + payment.events);
+  }
+
+  /// Gets the total gifted events for an organisation
+  int getGiftedEventsForOrganisation(String organisationId) {
+    final payments = getPaymentsForOrganisation(organisationId);
+    return payments
+        .where((payment) => payment.isFree)
+        .fold(0, (sum, payment) => sum + payment.events);
+  }
+
   /// Gets all payments across all organisations
   List<Payment> getAllPayments() {
     return paymentsByOrganisation.values.expand((list) => list).toList();

@@ -6,16 +6,18 @@ import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/theme/styled_app_text.dart';
 import 'package:trax_admin_portal/utils/enums/sizes.dart';
 
-/// Card widget for displaying event statistics including total, purchased, and remaining events
+/// Card widget for displaying event statistics including total, purchased, gifted, and remaining events
 class EventsStatsCard extends StatelessWidget {
   final int totalEvents;
   final int purchasedEvents;
+  final int giftedEvents;
   final int remainingEvents;
 
   const EventsStatsCard({
     super.key,
     required this.totalEvents,
     required this.purchasedEvents,
+    required this.giftedEvents,
     required this.remainingEvents,
   });
 
@@ -96,6 +98,14 @@ class EventsStatsCard extends StatelessWidget {
         AppSpacing.verticalSm(context),
         _buildStatRow(
           context,
+          icon: Icons.card_giftcard,
+          label: 'Gifted',
+          value: giftedEvents.toString(),
+          color: Colors.amber.shade700,
+        ),
+        AppSpacing.verticalSm(context),
+        _buildStatRow(
+          context,
           icon: Icons.inventory_2_outlined,
           label: 'Remaining',
           value: remainingEvents.toString(),
@@ -125,6 +135,16 @@ class EventsStatsCard extends StatelessWidget {
             label: 'Purchased',
             value: purchasedEvents.toString(),
             color: AppColors.success,
+          ),
+        ),
+        AppSpacing.horizontalMd(context),
+        Expanded(
+          child: _buildStatItem(
+            context,
+            icon: Icons.card_giftcard,
+            label: 'Gifted',
+            value: giftedEvents.toString(),
+            color: Colors.amber.shade700,
           ),
         ),
         AppSpacing.horizontalMd(context),

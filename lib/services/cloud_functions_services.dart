@@ -257,4 +257,85 @@ class CloudFunctionsService extends GetxService {
       rethrow;
     }
   }
+
+  /// Assigns free event credits to an organisation (Super Admin only)
+  /// Returns a map with success status, paymentId, and message
+  Future<Map<String, dynamic>> assignFreeCredits({
+    required String organisationId,
+    required int events,
+    String? note,
+  }) async {
+    try {
+      final callable = _functions.httpsCallable(
+        'assignFreeCredits',
+        options: HttpsCallableOptions(timeout: const Duration(seconds: 30)),
+      );
+
+      final result = await callable.call(<String, dynamic>{
+        'organisationId': organisationId.trim(),
+        'events': events,
+        if (note != null && note.trim().isNotEmpty) 'note': note.trim(),
+      });
+
+      final data = result.data;
+      if (data is Map) return Map<String, dynamic>.from(data);
+      return {'success': true, 'data': data};
+    } on FirebaseFunctionsException catch (e) {
+      print('Firebase Functions Error: ${e.code} - ${e.message}');
+      print('Details: ${e.details}');
+      
+      switch (e.code) {
+        case 'unauthenticated':
+          throw Exception('Please sign in to assign credits');
+        case 'permission-denied':
+          throw Exception('Only super admins can assign free credits');
+        case 'not-found':
+          throw Exception('Organisation not found');
+        case 'invalid-argument':
+          throw Exception(e.message ?? 'Invalid input: Please check the organisation ID and number of events');
+        default:
+          throw Exception('Failed to assign credits: ${e.message ?? e.code}');
+      }
+    } catch (e) {
+      print('Error assigning free credits: $e');
+      rethrow;
+    }
+  }
+
+  /// Gets payments/transactions for specified organisations
+  Future<Map<String, dynamic>> getOrganisationPayments({
+    required List<String> organisationIds,
+  }) async {
+    try {
+      final callable = _functions.httpsCallable(
+        'getOrganisationPayments',
+        options: HttpsCallableOptions(timeout: const Duration(seconds: 60)),
+      );
+
+      final result = await callable.call(<String, dynamic>{
+        'organisationIds': organisationIds,
+      });
+
+      final data = result.data;
+      if (data is Map) return Map<String, dynamic>.from(data);
+      return {'success': true, 'payments': {}};
+    } on FirebaseFunctionsException catch (e) {
+      print('Firebase Functions Error: ${e.code} - ${e.message}');
+      print('Details: ${e.details}');
+      
+      switch (e.code) {
+        case 'unauthenticated':
+          throw Exception('Please sign in to view payments');
+        case 'permission-denied':
+          throw Exception('You don\'t have permission to view these payments');
+        case 'invalid-argument':
+          throw Exception('Invalid organisation IDs');
+        default:
+          throw Exception('Failed to load payments: ${e.message ?? e.code}');
+      }
+    } catch (e) {
+      print('Error getting organisation payments: $e');
+      rethrow;
+    }
+  }
 }

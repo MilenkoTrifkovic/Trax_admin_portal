@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:trax_admin_portal/controller/global_controllers/payments_controller.dart';
+import 'package:trax_admin_portal/features/super_admin/companies/widgets/assign_free_credits_dialog.dart';
 import 'package:trax_admin_portal/features/super_admin/companies/widgets/company_header.dart';
 import 'package:trax_admin_portal/features/super_admin/companies/widgets/events_stats_card.dart';
 import 'package:trax_admin_portal/features/super_admin/companies/widgets/salesperson_card.dart';
-import 'package:trax_admin_portal/features/super_admin/companies/widgets/transaction_history_widget.dart';
+import 'package:trax_admin_portal/features/super_admin/companies/widgets/transaction_history/transaction_history_widget.dart';
 import 'package:trax_admin_portal/features/super_admin/global_controllers/sales_people_global_controller.dart';
 import 'package:trax_admin_portal/features/super_admin/super_admin_events/controllers/super_admin_event_list_controller.dart';
 import 'package:trax_admin_portal/helper/app_padding.dart';
@@ -42,22 +43,21 @@ class CompanyInfoHeader extends StatefulWidget {
 class _CompanyInfoHeaderState extends State<CompanyInfoHeader> {
   bool _isTransactionHistoryExpanded = false;
 
+  void _showAssignFreeCreditsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AssignFreeCreditsDialog(
+        companyName: widget.companySummary.companyName,
+        organisationId: widget.companySummary.organisationId,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final salesPeopleController = Get.find<SalesPeopleGlobalController>();
     final paymentsController = Get.find<PaymentsController>();
     final isPhone = ScreenSize.isPhone(context);
-    final isDesktop = ScreenSize.isDesktop(context);
-
-    // Get payment data for this organisation
-    final transactions = paymentsController.getPaymentsForOrganisation(
-      widget.companySummary.organisationId,
-    );
-    final purchasedEvents = paymentsController.getTotalEventsForOrganisation(
-      widget.companySummary.organisationId,
-    );
-    final totalEvents = widget.companySummary.eventCount;
-    final remainingEvents = purchasedEvents - totalEvents;
 
     return Container(
       padding: isPhone
@@ -74,69 +74,79 @@ class _CompanyInfoHeaderState extends State<CompanyInfoHeader> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Back button
-          if (widget.onBackPressed != null)
-            Padding(
-              padding: EdgeInsets.only(bottom: AppSpacing.md(context)),
-              child: TextButton.icon(
-                onPressed: widget.onBackPressed,
-                icon: Icon(Icons.arrow_back, size: isPhone ? 16 : 18),
-                label: Text(
-                  isPhone ? 'Back' : 'Back to Companies',
-                  style: TextStyle(fontSize: isPhone ? 14 : 16),
+      child: Obx(() {
+        // Get payment data for this organisation (reactive)
+        final transactions = paymentsController.getPaymentsForOrganisation(
+          widget.companySummary.organisationId,
+        );
+        final purchasedEvents = paymentsController.getPurchasedEventsForOrganisation(
+          widget.companySummary.organisationId,
+        );
+        final giftedEvents = paymentsController.getGiftedEventsForOrganisation(
+          widget.companySummary.organisationId,
+        );
+        final totalPaidEvents = purchasedEvents + giftedEvents;
+        final totalEvents = widget.companySummary.eventCount;
+        final remainingEvents = totalPaidEvents - totalEvents;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Back button
+            if (widget.onBackPressed != null)
+              Padding(
+                padding: EdgeInsets.only(bottom: AppSpacing.md(context)),
+                child: TextButton.icon(
+                  onPressed: widget.onBackPressed,
+                  icon: Icon(Icons.arrow_back, size: isPhone ? 16 : 18),
+                  label: Text(
+                    isPhone ? 'Back' : 'Back to Companies',
+                    style: TextStyle(fontSize: isPhone ? 14 : 16),
+                  ),
                 ),
               ),
+
+            // Company header
+            CompanyHeader(companyName: widget.companySummary.companyName),
+
+            AppSpacing.verticalMd(context),
+            const Divider(),
+            AppSpacing.verticalLg(context),
+
+            // Info cards - Events stats and Salesperson (stacked vertically on all screen sizes)
+            _buildInfoCards(
+              context,
+              salesPeopleController,
+              totalPaidEvents,
+              purchasedEvents,
+              giftedEvents,
+              remainingEvents,
             ),
 
-          // Company header
-          CompanyHeader(companyName: widget.companySummary.companyName),
-
-          AppSpacing.verticalMd(context),
-          const Divider(),
-          AppSpacing.verticalLg(context),
-
-          // Info cards - Events stats and Salesperson (stacked on phone/tablet, side-by-side on desktop)
-          isDesktop
-              ? _buildDesktopInfoCards(
-                  context,
-                  salesPeopleController,
-                  totalEvents,
-                  purchasedEvents,
-                  remainingEvents,
-                )
-              : _buildMobileInfoCards(
-                  context,
-                  salesPeopleController,
-                  totalEvents,
-                  purchasedEvents,
-                  remainingEvents,
-                ),
-
-          AppSpacing.verticalLg(context),
-
-          // Transaction History
-          TransactionHistoryWidget(
-            transactions: transactions,
-            isExpanded: _isTransactionHistoryExpanded,
-            onToggleExpand: () {
-              setState(() {
-                _isTransactionHistoryExpanded = !_isTransactionHistoryExpanded;
-              });
-            },
-          ),
-        ],
-      ),
+            AppSpacing.verticalLg(context),
+            // Transaction History
+            TransactionHistoryWidget(
+              transactions: transactions,
+              isExpanded: _isTransactionHistoryExpanded,
+              onToggleExpand: () {
+                setState(() {
+                  _isTransactionHistoryExpanded = !_isTransactionHistoryExpanded;
+                });
+              },
+              onGiveFreeEvents: () => _showAssignFreeCreditsDialog(context),
+            ),
+          ],
+        );
+      }),
     );
   }
 
-  Widget _buildMobileInfoCards(
+  Widget _buildInfoCards(
     BuildContext context,
     SalesPeopleGlobalController salesPeopleController,
     int totalEvents,
     int purchasedEvents,
+    int giftedEvents,
     int remainingEvents,
   ) {
     return Column(
@@ -145,6 +155,7 @@ class _CompanyInfoHeaderState extends State<CompanyInfoHeader> {
         EventsStatsCard(
           totalEvents: totalEvents,
           purchasedEvents: purchasedEvents,
+          giftedEvents: giftedEvents,
           remainingEvents: remainingEvents,
         ),
         AppSpacing.verticalMd(context),
@@ -155,43 +166,6 @@ class _CompanyInfoHeaderState extends State<CompanyInfoHeader> {
           controller: widget.controller,
         ),
       ],
-    );
-  }
-
-  Widget _buildDesktopInfoCards(
-    BuildContext context,
-    SalesPeopleGlobalController salesPeopleController,
-    int totalEvents,
-    int purchasedEvents,
-    int remainingEvents,
-  ) {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Events Stats Card
-          Expanded(
-            child: SizedBox.expand(
-              child: EventsStatsCard(
-                totalEvents: totalEvents,
-                purchasedEvents: purchasedEvents,
-                remainingEvents: remainingEvents,
-              ),
-            ),
-          ),
-          AppSpacing.horizontalMd(context),
-          // Salesperson Card
-          Expanded(
-            child: SizedBox.expand(
-              child: SalespersonCard(
-                companySummary: widget.companySummary,
-                salesPeopleController: salesPeopleController,
-                controller: widget.controller,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
