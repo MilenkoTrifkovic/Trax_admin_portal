@@ -173,11 +173,18 @@ class _AdminEventDetailsState extends State<AdminEventDetails> {
               final authController = Get.find<AuthController>();
               final userOrgId = authController.organisationId.value;
               final eventOrgId = controller.event.value?.organisationId;
+              final isSuperAdmin = authController.isSuperAdmin;
               
               // Show analytics if:
-              // 1. User is regular admin viewing their org's event, OR
-              // 2. User is super admin viewing their selected org's event
-              final canViewAnalytics = userOrgId == eventOrgId;
+              // 1. User is super admin (can view all events), OR
+              // 2. User's org matches event's org (regular admin/sales viewing their org's event)
+              final canViewAnalytics = isSuperAdmin || userOrgId == eventOrgId;
+              
+              print('🔍 Analytics visibility check:');
+              print('  - User is super admin: $isSuperAdmin');
+              print('  - User org ID: $userOrgId');
+              print('  - Event org ID: $eventOrgId');
+              print('  - Can view analytics: $canViewAnalytics');
               
               if (!canViewAnalytics) {
                 return Container(
@@ -193,7 +200,7 @@ class _AdminEventDetailsState extends State<AdminEventDetails> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Analytics are only available for events in your selected organization.',
+                          'Analytics are only available for events in your organization.',
                           style: GoogleFonts.poppins(
                             fontSize: 13,
                             color: const Color(0xFF6B7280),
@@ -3304,14 +3311,18 @@ class _EventAnalyzerCardState extends State<EventAnalyzerCard> {
       _error = null;
     });
 
+    print('📊 EventAnalyzerCard: Loading analytics for event ${widget.eventId}');
+
     try {  
       final res = await _svc.getEventAnalytics(eventId: widget.eventId);
       if (!mounted) return;
+      print('✅ EventAnalyzerCard: Successfully loaded analytics');
       setState(() {
         _data = res;
         _loadedAt = DateTime.now();
       });
     } catch (e) {
+      print('❌ EventAnalyzerCard: Error loading analytics: $e');
       if (!mounted) return;
       setState(() => _error = e.toString());
     } finally {
