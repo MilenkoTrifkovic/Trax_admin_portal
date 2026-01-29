@@ -156,7 +156,43 @@ class AuthController extends GetxController {
     if (currentUser == null) return;
 
     try {
-      // First, check if user is a sales person by email
+      // First, check users collection for super admin role
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+
+      if (userDoc.exists) {
+        final data = userDoc.data()!;
+        final roleString = data['role'] as String? ?? '';
+        final orgId = data['organisationId'] as String?;
+
+        // Use the extension method to properly convert from Firestore format
+        userRole.value = UserRoleExtension.fromFirestore(roleString);
+        organisationId.value = orgId;
+
+        // Check if user is a super admin
+        if (userRole.value == UserRole.superAdmin) {
+          print('✅ User is a super admin: ${data['name']}');
+          salesPerson.value = null; // Clear any cached sales person data
+          
+          // Super admin: fetch all organisations
+          try {
+            organisations.value = await _firestoreServices.getAllOrganisations();
+            _companyInfoExists.value = organisations.isNotEmpty;
+            organisation.value = organisations.isNotEmpty ? organisations.first : null;
+            print('✅ Loaded ${organisations.length} organisations for super admin');
+          } catch (e) {
+            print('❌ Error fetching organisations for super admin: $e');
+            organisations.clear();
+            organisation.value = null;
+            _companyInfoExists.value = false;
+          }
+          return; // Exit early for super admin
+        }
+      }
+
+      // Not a super admin in users collection, check if user is a sales person
       try {
         final fetchedSalesPerson = await _salesPeopleServices.getSalesPersonByEmail(
           currentUser.email ?? '',
@@ -185,53 +221,11 @@ class AuthController extends GetxController {
       } catch (e) {
         print('⚠️ Error checking sales_people collection: $e');
         salesPerson.value = null;
-        // Continue to check users collection
+        // Continue to handle unsupported role
       }
 
-      // Not a sales person, check users collection
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser.uid)
-          .get();
-
-      if (!userDoc.exists) {
-        // User exists in Firebase Auth but not in Firestore yet.
-        // This only happens for FIRST signup before handleNewUser runs.
-        userRole.value = null;
-        organisationId.value = null;
-        _companyInfoExists.value = false;
-        organisation.value = null;
-        return;
-      }
-
-      final data = userDoc.data()!;
-      final roleString = data['role'] as String? ?? '';
-      final orgId = data['organisationId'] as String?;
-
-      // Use the extension method to properly convert from Firestore format
-      userRole.value = UserRoleExtension.fromFirestore(roleString);
-      organisationId.value = orgId;
-
-      // Only super admin and sales person roles are supported
-      final isSuperAdmin = userRole.value == UserRole.superAdmin;
-      final isSalesPerson = userRole.value == UserRole.salesPerson;
-
-      if (isSuperAdmin) {
-        // Super admin: fetch all organisations
-        try {
-          organisations.value = await _firestoreServices.getAllOrganisations();
-          _companyInfoExists.value = organisations.isNotEmpty;
-          organisation.value = organisations.isNotEmpty ? organisations.first : null;
-        } catch (e) {
-          print('❌ Error fetching organisations for super admin: $e');
-          organisations.clear();
-          organisation.value = null;
-          _companyInfoExists.value = false;
-        }
-      } else if (isSalesPerson) {
-        // Sales person: already handled above
-        // No further action needed
-      } else {
+      // User exists in Firestore but has no supported role
+      if (userDoc.exists) {
         // Not a supported role
         userRole.value = null;
         organisationId.value = null;
@@ -240,6 +234,13 @@ class AuthController extends GetxController {
         organisations.clear();
         // Show friendly error message
         _snackbarController?.showErrorMessage('This portal is only for Super Admin and Sales Person accounts.');
+      } else {
+        // User exists in Firebase Auth but not in Firestore yet.
+        // This only happens for FIRST signup before handleNewUser runs.
+        userRole.value = null;
+        organisationId.value = null;
+        _companyInfoExists.value = false;
+        organisation.value = null;
       }
     } catch (e) {
       // Catch any Firestore or other exceptions and show a friendly message

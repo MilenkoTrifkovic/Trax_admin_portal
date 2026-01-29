@@ -10,6 +10,7 @@ import 'package:trax_admin_portal/controller/global_controllers/venues_controlle
 import 'package:trax_admin_portal/controller/menus_list_controller.dart';
 import 'package:trax_admin_portal/controller/menus_screen_controller.dart';
 import 'package:trax_admin_portal/features/super_admin/global_controllers/sales_people_global_controller.dart';
+import 'package:trax_admin_portal/features/super_admin/global_controllers/super_admins_global_controller.dart';
 import 'package:trax_admin_portal/layout/header_resolver.dart';
 import 'package:trax_admin_portal/utils/navigation/app_routes.dart';
 import 'package:trax_admin_portal/utils/navigation/custom_error_page.dart';
@@ -21,6 +22,7 @@ import 'package:trax_admin_portal/widgets/content_wrapper.dart';
 import 'package:trax_admin_portal/features/super_admin/super_admin_events/view/super_admin_page.dart';
 import 'package:trax_admin_portal/features/super_admin/widgets/admin_navigation_rail_wrapper.dart';
 import 'package:trax_admin_portal/features/super_admin/sales_people_management/view/sales_people_management_page.dart';
+import 'package:trax_admin_portal/features/super_admin/super_admin_management/view/super_admin_management_page.dart';
 import 'package:trax_admin_portal/features/super_admin/dashboard/view/dashboard_page.dart';
 
 /// Router setup for the Super Admin and Sales Person portal.
@@ -146,6 +148,11 @@ GoRouter buildRouter() {
                 Get.put(SalesPeopleGlobalController(), permanent: true);
                 print('✅ Initialized SalesPeopleGlobalController');
               }
+              
+              if (!Get.isRegistered<SuperAdminsGlobalController>()) {
+                Get.put(SuperAdminsGlobalController(), permanent: true);
+                print('✅ Initialized SuperAdminsGlobalController');
+              }
 
               // Initialize controllers needed for event details
               // Only initialize VenuesController if not already registered
@@ -234,6 +241,10 @@ GoRouter buildRouter() {
           GoRoute(
             path: AppRoute.superAdminSalesPeople.path,
             builder: (context, state) => SalesPeopleManagementPage(),
+          ),
+          GoRoute(
+            path: AppRoute.superAdminManagement.path,
+            builder: (context, state) => SuperAdminManagementPage(),
           ),
           // Add more super admin routes here as needed
         ],

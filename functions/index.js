@@ -16,5 +16,6 @@ export { getSelectedMenuItemsForInvitation } from "./getSelectedMenuItemsForInvi
 export { submitMenuSelection } from "./submitMenuSelection.js";
 export { getEventAnalytics } from "./getEventAnalytics.js";
 export { createSalesPersonAccount } from "./createSalesPersonAccount.js";
+export { manageSuperAdmin } from "./manageSuperAdmin.js";
 export { getOrganisationPayments } from "./getOrganisationPayments.js";
 export { assignFreeCredits } from "./assignFreeCredits.js";

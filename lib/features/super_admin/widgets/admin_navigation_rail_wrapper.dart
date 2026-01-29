@@ -46,6 +46,7 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
     if (location.startsWith(widget.dashboardRoute.path)) return 0;
     if (location.startsWith(widget.eventsRoute.path)) return 1;
     if (!widget.hideSalesPeople && location.startsWith(AppRoute.superAdminSalesPeople.path)) return 2;
+    if (!widget.hideSalesPeople && location.startsWith(AppRoute.superAdminManagement.path)) return 3;
     return 0;
   }
 
@@ -86,6 +87,10 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
           pushAndRemoveAllRoute(AppRoute.superAdminSalesPeople, context);
           return;
         case 3:
+          // Super Admins
+          pushAndRemoveAllRoute(AppRoute.superAdminManagement, context);
+          return;
+        case 4:
           // Logout
           try {
             await authController.logout();
@@ -174,6 +179,12 @@ class _AdminNavigationRailWrapperState extends State<AdminNavigationRailWrapper>
           label: 'Sales People',
           icon: Icons.people_outline,
           selectedIcon: Icons.people,
+        ),
+      if (!widget.hideSalesPeople)
+        const NavItemData(
+          label: 'Super Admins',
+          icon: Icons.admin_panel_settings_outlined,
+          selectedIcon: Icons.admin_panel_settings,
         ),
       const NavItemData(
         label: 'Logout',
