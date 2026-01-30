@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:trax_admin_portal/models/sales_person_model.dart';
+import 'package:trax_admin_portal/models/user_model.dart';
 import 'package:trax_admin_portal/services/sales_people_management_services.dart';
 
 /// Global controller for managing sales people data across the entire app.
@@ -10,12 +10,14 @@ import 'package:trax_admin_portal/services/sales_people_management_services.dart
 /// - Local controllers should use this instead of directly calling services
 /// - Provides reactive access to sales people data
 /// - Ensures data consistency across features
+/// 
+/// Note: Sales people are now stored in the 'users' collection with role = salesPerson
 class SalesPeopleGlobalController extends GetxController {
   final SalesPeopleManagementServices _salesPeopleServices = SalesPeopleManagementServices();
 
   var isLoading = false.obs;
   var isInitialized = false.obs;
-  RxList<SalesPersonModel> salesPeople = <SalesPersonModel>[].obs;
+  RxList<UserModel> salesPeople = <UserModel>[].obs;
 
   @override
   void onInit() {
@@ -45,7 +47,7 @@ class SalesPeopleGlobalController extends GetxController {
   }
 
   /// Add a new sales person
-  Future<SalesPersonModel> addSalesPerson(SalesPersonModel salesPerson) async {
+  Future<UserModel> addSalesPerson(UserModel salesPerson) async {
     try {
       isLoading.value = true;
       final created = await _salesPeopleServices.createSalesPerson(salesPerson);
@@ -61,11 +63,11 @@ class SalesPeopleGlobalController extends GetxController {
   }
 
   /// Update an existing sales person
-  Future<SalesPersonModel> updateSalesPerson(SalesPersonModel salesPerson) async {
+  Future<UserModel> updateSalesPerson(UserModel salesPerson) async {
     try {
       isLoading.value = true;
       final updated = await _salesPeopleServices.updateSalesPerson(salesPerson);
-      final index = salesPeople.indexWhere((p) => p.docId == updated.docId);
+      final index = salesPeople.indexWhere((p) => p.userId == updated.userId);
       if (index != -1) {
         salesPeople[index] = updated;
         print('✅ Global: Sales person updated: ${updated.name}');
@@ -84,7 +86,7 @@ class SalesPeopleGlobalController extends GetxController {
     try {
       isLoading.value = true;
       await _salesPeopleServices.deleteSalesPerson(salesPersonId);
-      salesPeople.removeWhere((p) => p.docId == salesPersonId);
+      salesPeople.removeWhere((p) => p.userId == salesPersonId);
       print('✅ Global: Sales person deleted: $salesPersonId');
     } catch (e) {
       print('❌ Global: Error deleting sales person: $e');
@@ -95,7 +97,7 @@ class SalesPeopleGlobalController extends GetxController {
   }
 
   /// Resend password setup email to a sales person
-  Future<void> resendPasswordSetupEmail(SalesPersonModel salesPerson) async {
+  Future<void> resendPasswordSetupEmail(UserModel salesPerson) async {
     try {
       isLoading.value = true;
       await _salesPeopleServices.resendPasswordSetupEmail(salesPerson);
@@ -113,16 +115,16 @@ class SalesPeopleGlobalController extends GetxController {
   // ═══════════════════════════════════════════════════════════════════════
 
   /// Get a sales person by ID
-  SalesPersonModel? getSalesPersonById(String salesPersonId) {
+  UserModel? getSalesPersonById(String salesPersonId) {
     try {
-      return salesPeople.firstWhere((sp) => sp.docId == salesPersonId);
+      return salesPeople.firstWhere((sp) => sp.userId == salesPersonId);
     } catch (e) {
       return null;
     }
   }
 
   /// Get a sales person by email
-  SalesPersonModel? getSalesPersonByEmail(String email) {
+  UserModel? getSalesPersonByEmail(String email) {
     try {
       return salesPeople.firstWhere(
         (sp) => sp.email.toLowerCase() == email.toLowerCase(),
@@ -133,13 +135,13 @@ class SalesPeopleGlobalController extends GetxController {
   }
 
   /// Get all active sales people
-  List<SalesPersonModel> get activeSalesPeople {
-    return salesPeople.where((sp) => sp.isActive && !sp.isDisabled).toList();
+  List<UserModel> get activeSalesPeople {
+    return salesPeople.where((sp) => !sp.isDisabled).toList();
   }
 
   /// Get all inactive sales people
-  List<SalesPersonModel> get inactiveSalesPeople {
-    return salesPeople.where((sp) => !sp.isActive || sp.isDisabled).toList();
+  List<UserModel> get inactiveSalesPeople {
+    return salesPeople.where((sp) => sp.isDisabled).toList();
   }
 
   /// Get sales people count
@@ -154,7 +156,7 @@ class SalesPeopleGlobalController extends GetxController {
   /// Get sales people as a map for dropdowns (id -> name)
   Map<String, String> get salesPeopleMap {
     return {
-      for (var sp in activeSalesPeople) sp.docId: sp.name,
+      for (var sp in activeSalesPeople) sp.userId!: sp.name,
     };
   }
 
@@ -162,7 +164,7 @@ class SalesPeopleGlobalController extends GetxController {
   List<Map<String, String>> get salesPeopleForDropdown {
     return activeSalesPeople.map((sp) {
       return {
-        'id': sp.docId,
+        'id': sp.userId!,
         'name': sp.name,
         'email': sp.email,
       };

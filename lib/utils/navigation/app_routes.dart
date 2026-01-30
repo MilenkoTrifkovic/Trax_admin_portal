@@ -5,6 +5,7 @@ enum AppRoute {
   welcome('/welcome'),
   signup('/signup'),
   emailVerification('/email-verification'),
+  resetPassword('/reset-password'),
 
   // Super Admin routes
   superAdmin('/super-admin'),

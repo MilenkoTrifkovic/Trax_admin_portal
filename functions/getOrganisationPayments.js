@@ -32,16 +32,10 @@ export const getOrganisationPayments = onCall(async (request) => {
 
   const isSuperAdmin = userRole === "super_admin";
 
-  // Check if user is a salesperson
-  const currentUserEmail = request.auth.token.email || "";
-  const salesPersonQuery = await db.collection("sales_people")
-    .where("email", "==", currentUserEmail)
-    .limit(1)
-    .get();
-  
-  const isSalesPerson = !salesPersonQuery.empty && 
-    salesPersonQuery.docs[0].data().isActive === true && 
-    salesPersonQuery.docs[0].data().isDisabled !== true;
+  // Check if user is a salesperson (now stored in users collection with role = sales_person)
+  // Sales people are active if they are not disabled
+  const isSalesPerson = userRole === "sales_person" && 
+    user.isDisabled !== true;
 
   // Regular users can only view their own organisation's payments
   if (!isSuperAdmin && !isSalesPerson) {

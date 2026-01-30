@@ -18,6 +18,7 @@ import 'package:trax_admin_portal/utils/navigation/routes.dart';
 import 'package:trax_admin_portal/view/admin/event_details/admin_event_details.dart';
 import 'package:trax_admin_portal/view/authentication/login/email_verification_view.dart';
 import 'package:trax_admin_portal/view/authentication/login/welcome_view.dart';
+import 'package:trax_admin_portal/features/auth/password_reset/view/password_reset_page.dart';
 import 'package:trax_admin_portal/widgets/content_wrapper.dart';
 import 'package:trax_admin_portal/features/super_admin/super_admin_events/view/super_admin_page.dart';
 import 'package:trax_admin_portal/features/super_admin/widgets/admin_navigation_rail_wrapper.dart';
@@ -98,6 +99,16 @@ GoRouter buildRouter() {
         },
         path: AppRoute.emailVerification.path,
         builder: (context, state) => EmailVerificationView(),
+      ),
+
+      // Password Reset Page (public, no authentication required)
+      GoRoute(
+        path: AppRoute.resetPassword.path,
+        builder: (context, state) {
+          // Extract oobCode from query parameters
+          final oobCode = state.uri.queryParameters['oobCode'] ?? '';
+          return PasswordResetPage(oobCode: oobCode);
+        },
       ),
 
       // SUPER ADMIN SHELL ROUTE

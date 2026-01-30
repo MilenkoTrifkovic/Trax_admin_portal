@@ -3,14 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:trax_admin_portal/features/super_admin/sales_people_management/controllers/sales_people_management_controller.dart';
 import 'package:trax_admin_portal/helper/app_spacing.dart';
 import 'package:trax_admin_portal/helper/screen_size.dart';
-import 'package:trax_admin_portal/models/sales_person_model.dart';
+import 'package:trax_admin_portal/models/user_model.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/theme/app_font_weight.dart';
 import 'package:trax_admin_portal/theme/styled_app_text.dart';
 
 /// Single list item representing a sales person
 class SalesPersonListItem extends StatelessWidget {
-  final SalesPersonModel salesPerson;
+  final UserModel salesPerson;
   final SalesPeopleManagementController controller;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -134,8 +134,9 @@ class SalesPersonListItem extends StatelessWidget {
         const SizedBox(height: 12),
         
         // Actions row
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: [
             TextButton.icon(
               onPressed: onEdit,
@@ -146,7 +147,15 @@ class SalesPersonListItem extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
             ),
-            const SizedBox(width: 8),
+            TextButton.icon(
+              onPressed: onResendEmail,
+              icon: const Icon(Icons.email_outlined, size: 18),
+              label: const Text('Resend'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.orange.shade700,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+            ),
             TextButton.icon(
               onPressed: onDelete,
               icon: const Icon(Icons.delete_outline, size: 18),
@@ -293,7 +302,7 @@ class SalesPersonListItem extends StatelessWidget {
         
         // Actions
         SizedBox(
-          width: 80,
+          width: 120,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -302,6 +311,12 @@ class SalesPersonListItem extends StatelessWidget {
                 color: AppColors.primary,
                 onPressed: onEdit,
                 tooltip: 'Edit',
+              ),
+              IconButton(
+                icon: const Icon(Icons.email_outlined, size: 20),
+                color: Colors.orange.shade700,
+                onPressed: onResendEmail,
+                tooltip: 'Resend Password Email',
               ),
               IconButton(
                 icon: const Icon(Icons.delete_outline, size: 20),
@@ -393,7 +408,7 @@ class SalesPersonListItem extends StatelessWidget {
           
           // Actions
           SizedBox(
-            width: 80,
+            width: 120,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -402,6 +417,12 @@ class SalesPersonListItem extends StatelessWidget {
                   color: AppColors.primary,
                   onPressed: onEdit,
                   tooltip: 'Edit',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.email_outlined, size: 20),
+                  color: Colors.orange.shade700,
+                  onPressed: onResendEmail,
+                  tooltip: 'Resend Password Email',
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_outline, size: 20),
@@ -424,25 +445,19 @@ class SalesPersonListItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: salesPerson.isDisabled 
             ? Colors.red.withOpacity(0.1)
-            : salesPerson.isActive
-                ? Colors.green.withOpacity(0.1)
-                : Colors.grey.withOpacity(0.1),
+            : Colors.green.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         salesPerson.isDisabled 
             ? 'Disabled' 
-            : salesPerson.isActive 
-                ? 'Active' 
-                : 'Inactive',
+            : 'Active',
         style: TextStyle(
           fontSize: 12,
           fontWeight: AppFontWeight.medium,
           color: salesPerson.isDisabled 
               ? Colors.red.shade700
-              : salesPerson.isActive
-                  ? Colors.green.shade700
-                  : Colors.grey.shade700,
+              : Colors.green.shade700,
         ),
         textAlign: TextAlign.center,
       ),
@@ -450,7 +465,7 @@ class SalesPersonListItem extends StatelessWidget {
   }
   
   /// Format location string from address components
-  String _formatLocation(SalesPersonModel salesPerson) {
+  String _formatLocation(UserModel salesPerson) {
     final parts = <String>[];
     if (salesPerson.city != null && salesPerson.city!.isNotEmpty) {
       parts.add(salesPerson.city!);

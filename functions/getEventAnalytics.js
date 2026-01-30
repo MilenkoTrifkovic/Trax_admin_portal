@@ -86,17 +86,11 @@ export const getEventAnalytics = onCall(async (request) => {
   console.log("  - User Org ID:", userOrgId);
   console.log("  - User Role (raw):", userRole);
 
-  // Check if user is a salesperson (stored in separate collection)
-  // Sales people are identified by email, not by uid
-  const currentUserEmail = request.auth.token.email || "";
-  const salesPersonQuery = await db.collection("sales_people")
-    .where("email", "==", currentUserEmail)
-    .limit(1)
-    .get();
-  
-  const isSalesPerson = !salesPersonQuery.empty && 
-    salesPersonQuery.docs[0].data().isActive === true && 
-    salesPersonQuery.docs[0].data().isDisabled !== true;
+  // Check if user is a salesperson (now stored in users collection with role = sales_person)
+  // Sales people have role = 'sales_person' in the users collection
+  const isSalesPerson = userRole === "sales_person" && 
+    user.isActive === true && 
+    user.isDisabled !== true;
 
   console.log("  - Is Sales Person:", isSalesPerson);
 

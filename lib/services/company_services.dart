@@ -54,10 +54,11 @@ class CompanyServices {
         }
       }
 
-      // Fetch all sales people
+      // Fetch all sales people from users collection
       final salesPeopleSnapshot = await retryFirestore(
         () => _db
-            .collection('sales_people')
+            .collection('users')
+            .where('role', isEqualTo: 'sales_person')
             .where('isDisabled', isEqualTo: false)
             .get(),
         operationName: 'getAllSalesPeople',
@@ -140,7 +141,7 @@ class CompanyServices {
 
       if (salesPersonId != null) {
         final salesDoc = await retryFirestore(
-          () => _db.collection('sales_people').doc(salesPersonId).get(),
+          () => _db.collection('users').doc(salesPersonId).get(),
           operationName: 'getSalesPerson',
         );
 

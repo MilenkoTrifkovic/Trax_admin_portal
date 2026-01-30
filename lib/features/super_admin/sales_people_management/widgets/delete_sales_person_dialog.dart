@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:trax_admin_portal/models/sales_person_model.dart';
+import 'package:trax_admin_portal/models/user_model.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/theme/app_font_weight.dart';
 
 /// Confirmation dialog for deleting a sales person
 class DeleteSalesPersonDialog extends StatelessWidget {
-  final SalesPersonModel salesPerson;
+  final UserModel salesPerson;
   final VoidCallback onConfirm;
   
   const DeleteSalesPersonDialog({

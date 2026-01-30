@@ -155,7 +155,7 @@ class SalespersonCard extends StatelessWidget {
                 ),
                 ...salesPeople.map((sp) {
                   return DropdownMenuItem(
-                    value: sp.docId,
+                    value: sp.userId,
                     child: Text(sp.name),
                   );
                 }),

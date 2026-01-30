@@ -38,7 +38,7 @@ class CompaniesController extends GetxController {
       String? salesPersonId;
       if (_authController.isSalesPerson &&
           _authController.salesPerson.value != null) {
-        salesPersonId = _authController.salesPerson.value!.salesPersonId;
+        salesPersonId = _authController.salesPerson.value!.userId;
         print('🔍 Loading companies for salesperson: $salesPersonId');
       } else {
         print('🔍 Loading all companies (user is super admin or other role)');

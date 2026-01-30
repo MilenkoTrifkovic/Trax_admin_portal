@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:trax_admin_portal/models/organisation.dart';
-import 'package:trax_admin_portal/models/sales_person_model.dart';
+import 'package:trax_admin_portal/models/user_model.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trax_admin_portal/services/firestore_services/firestore_services.dart';
 // Removed unused import for SharedPrefServices
@@ -32,7 +32,7 @@ class AuthController extends GetxController {
   var userRole = Rx<UserRole?>(null);
   var organisation = Rxn<Organisation>();
   var organisations = <Organisation>[].obs; // For super admin - all organisations
-  var salesPerson = Rxn<SalesPersonModel>(); // ✅ Cached sales person data
+  var salesPerson = Rxn<UserModel>(); // ✅ Cached sales person data (with role = salesPerson)
 
   final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 
@@ -197,8 +197,8 @@ class AuthController extends GetxController {
         final fetchedSalesPerson = await _salesPeopleServices.getSalesPersonByEmail(
           currentUser.email ?? '',
         );
-        if (fetchedSalesPerson != null && fetchedSalesPerson.isActive && !fetchedSalesPerson.isDisabled) {
-          // User is an active sales person
+        if (fetchedSalesPerson != null && !fetchedSalesPerson.isDisabled) {
+          // User is an active sales person (not disabled)
           print('✅ User is an active sales person: ${fetchedSalesPerson.name}');
           salesPerson.value = fetchedSalesPerson; // ✅ Cache the sales person data
           userRole.value = UserRole.salesPerson;
@@ -215,11 +215,11 @@ class AuthController extends GetxController {
           }
           return;
         } else {
-          // Not a sales person or inactive - clear cached data
+          // Not a sales person or disabled - clear cached data
           salesPerson.value = null;
         }
       } catch (e) {
-        print('⚠️ Error checking sales_people collection: $e');
+        print('⚠️ Error checking users collection for sales person: $e');
         salesPerson.value = null;
         // Continue to handle unsupported role
       }

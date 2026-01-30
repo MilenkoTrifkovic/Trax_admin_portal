@@ -189,8 +189,8 @@ class _SuperAdminFormDialogState extends State<SuperAdminFormDialog> {
                 if (value == null || value.trim().isEmpty) {
                   return 'Email is required';
                 }
-                // Simple email validation
-                final emailRegex = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
+                // Email validation that allows + character (e.g., user+tag@example.com)
+                final emailRegex = RegExp(r'^[\w\-\.+]+@([\w-]+\.)+[\w-]{2,}$');
                 if (!emailRegex.hasMatch(value.trim())) {
                   return 'Please enter a valid email';
                 }

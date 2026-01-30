@@ -15,7 +15,8 @@ class ValidationHelper {
     if (value == null || value.isEmpty) {
       return 'Email is required';
     }
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    // Email validation that allows + character (e.g., user+tag@example.com)
+    final emailRegex = RegExp(r'^[\w\-\.+]+@([\w-]+\.)+[\w-]{2,}$');
     if (!emailRegex.hasMatch(value)) {
       return 'Enter a valid email address';
     }

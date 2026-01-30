@@ -19,3 +19,4 @@ export { createSalesPersonAccount } from "./createSalesPersonAccount.js";
 export { manageSuperAdmin } from "./manageSuperAdmin.js";
 export { getOrganisationPayments } from "./getOrganisationPayments.js";
 export { assignFreeCredits } from "./assignFreeCredits.js";
+export { verifyPasswordResetCode, confirmPasswordReset } from "./passwordReset.js";

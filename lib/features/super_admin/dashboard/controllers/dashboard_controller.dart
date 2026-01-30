@@ -30,7 +30,7 @@ class DashboardController extends GetxController {
       
       // Get salesPersonId if user is a salesperson
       final salesPersonId = _authController.isSalesPerson 
-          ? _authController.salesPerson.value?.salesPersonId 
+          ? _authController.salesPerson.value?.userId 
           : null;
       
       // Fetch all metrics (filtered by salesPersonId if applicable)

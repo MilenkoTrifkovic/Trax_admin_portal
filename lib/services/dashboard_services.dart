@@ -123,7 +123,8 @@ class DashboardServices {
     try {
       return await retryFirestore(() async {
         final snapshot = await _db
-            .collection('sales_people')
+            .collection('users')
+            .where('role', isEqualTo: 'sales_person')
             .where('isDisabled', isEqualTo: false)
             .count()
             .get();

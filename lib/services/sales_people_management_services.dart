@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:trax_admin_portal/helper/firestore_helper.dart';
 import 'package:trax_admin_portal/helper/ref_code_generator.dart';
-import 'package:trax_admin_portal/models/sales_person_model.dart';
+import 'package:trax_admin_portal/models/user_model.dart';
+import 'package:trax_admin_portal/utils/enums/user_type.dart';
 import 'package:uuid/uuid.dart';
 
 /// Service class for managing sales people in Firestore.
@@ -12,22 +13,25 @@ import 'package:uuid/uuid.dart';
 /// - Fetching sales people (all, by ID, by organisation)
 /// - Updating sales person information
 /// - Soft deleting sales people (marking as disabled)
+/// 
+/// Note: Sales people are now stored in the 'users' collection with role = salesPerson
 class SalesPeopleManagementServices {
   final _db = FirebaseFirestore.instance;
 
-  /// Reference to sales_people collection in Firestore
-  late final CollectionReference<Map<String, dynamic>> salesPeopleRef;
+  /// Reference to users collection in Firestore (sales people are stored here with role = salesPerson)
+  late final CollectionReference<Map<String, dynamic>> usersRef;
 
   SalesPeopleManagementServices() {
-    salesPeopleRef = _db.collection('sales_people');
+    usersRef = _db.collection('users');
   }
 
   /// Checks if a reference code already exists in Firestore
   /// Returns true if the code exists, false otherwise
   Future<bool> _refCodeExists(String refCode) async {
     try {
-      final snapshot = await salesPeopleRef
+      final snapshot = await usersRef
           .where('refCode', isEqualTo: refCode)
+          .where('role', isEqualTo: 'sales_person')
           .limit(1)
           .get();
       
@@ -69,64 +73,67 @@ class SalesPeopleManagementServices {
 
   /// Creates a new sales person in Firestore.
   /// 
-  /// Generates a unique salesPersonId using UUID v4 if not provided.
+  /// Generates a unique userId using UUID v4 if not provided.
   /// Generates a unique reference code (refCode) based on the person's name.
-  /// Uses the salesPersonId as the Firestore document ID for consistency.
+  /// Uses the userId as the Firestore document ID for consistency.
   /// Also creates a Firebase Auth account and sends password setup email.
   /// 
   /// Parameters:
-  /// - [salesPerson]: The SalesPersonModel to create
+  /// - [salesPerson]: The UserModel to create (must have role = salesPerson)
   /// 
-  /// Returns the created SalesPersonModel with generated IDs and refCode.
+  /// Returns the created UserModel with generated IDs and refCode.
   /// Throws [FirebaseException] if the create operation fails.
   /// Throws [FirebaseFunctionsException] if account creation fails.
-  Future<SalesPersonModel> createSalesPerson(SalesPersonModel salesPerson) async {
+  Future<UserModel> createSalesPerson(UserModel salesPerson) async {
     try {
+      if (salesPerson.role != UserRole.salesPerson) {
+        throw Exception('User must have salesPerson role');
+      }
+
       final uuid = Uuid();
-      final salesPersonId = (salesPerson.salesPersonId != null && 
-                            salesPerson.salesPersonId!.isNotEmpty)
-          ? salesPerson.salesPersonId!
+      final userId = (salesPerson.userId != null && 
+                            salesPerson.userId!.isNotEmpty)
+          ? salesPerson.userId!
           : uuid.v4();
 
       // Generate unique reference code
       final refCode = await _generateUniqueRefCode(salesPerson.name);
 
       final toCreate = salesPerson.copyWith(
-        docId: salesPersonId,
-        salesPersonId: salesPersonId,
+        userId: userId,
         refCode: refCode,
+        isDisabled: false, // Sales people are enabled by default
       );
 
-      // Step 1: Create Firestore document first
-      final docRef = salesPeopleRef.doc(salesPersonId);
-      await docRef.set(toCreate.toFirestoreCreate());
-      print('Sales person Firestore doc created: $salesPersonId with refCode: $refCode');
-
-      // Step 2: Create Firebase Auth account and send password setup email
+      // Step 1: Call cloud function FIRST to check for duplicates, create Auth, and Firestore doc
+      // The cloud function will:
+      // - Check if email already exists in Firestore
+      // - Create Firebase Auth account
+      // - Create Firestore document
+      // - Send password reset email
       try {
         final callable = FirebaseFunctions.instance.httpsCallable('createSalesPersonAccount');
         final result = await callable.call({
           'email': toCreate.email,
           'name': toCreate.name,
-          'salesPersonId': salesPersonId,
+          'salesPersonId': userId,
+          'refCode': refCode,  // Pass refCode to cloud function
+          'address': toCreate.address,
+          'city': toCreate.city,
+          'state': toCreate.state,
+          'country': toCreate.country,
         });
 
-        print('Firebase Auth account created: ${result.data}');
+        print('Cloud function response: ${result.data}');
+        print('Sales person created successfully via cloud function');
         
-        if (result.data['alreadyExists'] == true) {
-          print('User already existed, password reset email sent');
-        } else {
-          print('New user created, password setup email sent');
-        }
       } on FirebaseFunctionsException catch (e) {
-        print('Warning: Failed to create auth account: ${e.message}');
-        // Don't throw here - Firestore doc is already created
-        // Admin can manually create auth account later or resend email
-        print('Sales person created in Firestore but auth account creation failed');
-        print('User will need to have auth account created manually');
+        print('Error from cloud function: ${e.message}');
+        // If cloud function fails, throw the error
+        throw Exception('Failed to create sales person: ${e.message}');
       }
 
-      print('Sales person created successfully: $salesPersonId');
+      print('Sales person created successfully: $userId');
       return toCreate;
     } on FirebaseException catch (e) {
       print('Firestore error creating sales person: ${e.message}');
@@ -144,13 +151,14 @@ class SalesPeopleManagementServices {
   /// Parameters:
   /// - [includeDisabled]: Whether to include disabled sales people (default: false)
   /// 
-  /// Returns a list of all SalesPersonModel objects.
+  /// Returns a list of all UserModel objects with role = salesPerson.
   /// Throws [FirebaseException] if the fetch operation fails.
-  Future<List<SalesPersonModel>> getAllSalesPeople({
+  Future<List<UserModel>> getAllSalesPeople({
     bool includeDisabled = false,
   }) async {
     try {
-      Query<Map<String, dynamic>> query = salesPeopleRef;
+      Query<Map<String, dynamic>> query = usersRef
+          .where('role', isEqualTo: 'sales_person');
 
       if (!includeDisabled) {
         query = query.where('isDisabled', isEqualTo: false);
@@ -162,7 +170,7 @@ class SalesPeopleManagementServices {
       );
 
       final salesPeople = snapshot.docs
-          .map((doc) => SalesPersonModel.fromFirestore(doc.data(), doc.id))
+          .map((doc) => UserModel.fromFirestore(doc.data(), doc.id))
           .toList();
 
       print('Fetched ${salesPeople.length} sales people');
@@ -176,18 +184,18 @@ class SalesPeopleManagementServices {
     }
   }
 
-  /// Fetches a single sales person by their salesPersonId.
+  /// Fetches a single sales person by their salesPersonId (userId).
   /// 
   /// Parameters:
-  /// - [salesPersonId]: The salesPersonId to search for
+  /// - [salesPersonId]: The userId to search for
   /// 
-  /// Returns the SalesPersonModel if found.
+  /// Returns the UserModel if found.
   /// Throws [FirebaseException] if the fetch operation fails.
   /// Throws [Exception] if the sales person is not found.
-  Future<SalesPersonModel> getSalesPersonById(String salesPersonId) async {
+  Future<UserModel> getSalesPersonById(String salesPersonId) async {
     try {
       // Try direct doc lookup using salesPersonId as the doc id
-      final docRef = salesPeopleRef.doc(salesPersonId);
+      final docRef = usersRef.doc(salesPersonId);
       final snapshot = await retryFirestore(
         () => docRef.get(),
         operationName: 'getSalesPersonById',
@@ -197,10 +205,12 @@ class SalesPeopleManagementServices {
         throw Exception('Sales person not found with ID: $salesPersonId');
       }
 
-      final salesPerson = SalesPersonModel.fromFirestore(
-        snapshot.data()!,
-        snapshot.id,
-      );
+      final data = snapshot.data()!;
+      if (data['role'] != 'sales_person') {
+        throw Exception('User is not a sales person: $salesPersonId');
+      }
+
+      final salesPerson = UserModel.fromFirestore(data, snapshot.id);
 
       print('Fetched sales person: ${salesPerson.name}');
       return salesPerson;
@@ -215,37 +225,44 @@ class SalesPeopleManagementServices {
 
   /// Updates an existing sales person in Firestore.
   /// 
-  /// Uses the salesPersonId from the model to locate the document.
+  /// Uses the userId from the model to locate the document.
   /// Preserves createdAt timestamp and updates modifiedAt automatically.
   /// 
   /// Parameters:
-  /// - [salesPerson]: The updated SalesPersonModel
+  /// - [salesPerson]: The updated UserModel (must have role = salesPerson)
   /// 
-  /// Returns the updated SalesPersonModel.
+  /// Returns the updated UserModel.
   /// Throws [FirebaseException] if the update operation fails.
   /// Throws [Exception] if the sales person is not found.
-  Future<SalesPersonModel> updateSalesPerson(SalesPersonModel salesPerson) async {
+  Future<UserModel> updateSalesPerson(UserModel salesPerson) async {
     try {
-      if (salesPerson.docId.isEmpty && 
-          (salesPerson.salesPersonId == null || salesPerson.salesPersonId!.isEmpty)) {
-        throw Exception('Sales person ID is required for update');
+      if (salesPerson.role != UserRole.salesPerson) {
+        throw Exception('User must have salesPerson role');
       }
 
-      final salesPersonId = salesPerson.docId.isNotEmpty 
-          ? salesPerson.docId 
-          : salesPerson.salesPersonId!;
+      if (salesPerson.userId == null || salesPerson.userId!.isEmpty) {
+        throw Exception('User ID is required for update');
+      }
 
-      final docRef = salesPeopleRef.doc(salesPersonId);
+      final userId = salesPerson.userId!;
+
+      final docRef = usersRef.doc(userId);
       final docSnap = await docRef.get();
 
       if (!docSnap.exists) {
-        throw Exception('Sales person not found with ID: $salesPersonId');
+        throw Exception('Sales person not found with ID: $userId');
+      }
+
+      // Verify it's a sales person
+      final data = docSnap.data()!;
+      if (data['role'] != 'sales_person') {
+        throw Exception('User is not a sales person: $userId');
       }
 
       // Update the document
       await docRef.update(salesPerson.toFirestoreUpdate());
 
-      print('Sales person updated successfully: $salesPersonId');
+      print('Sales person updated successfully: $userId');
       return salesPerson;
     } on FirebaseException catch (e) {
       print('Firestore error updating sales person: ${e.message}');
@@ -262,17 +279,23 @@ class SalesPeopleManagementServices {
   /// isDisabled to true so they won't appear in normal queries.
   /// 
   /// Parameters:
-  /// - [salesPersonId]: The salesPersonId of the person to delete
+  /// - [salesPersonId]: The userId of the person to delete
   /// 
   /// Throws [FirebaseException] if the delete operation fails.
   /// Throws [Exception] if the sales person is not found.
   Future<void> deleteSalesPerson(String salesPersonId) async {
     try {
-      final docRef = salesPeopleRef.doc(salesPersonId);
+      final docRef = usersRef.doc(salesPersonId);
       final docSnap = await docRef.get();
 
       if (!docSnap.exists) {
         throw Exception('Sales person not found with ID: $salesPersonId');
+      }
+
+      // Verify it's a sales person
+      final data = docSnap.data()!;
+      if (data['role'] != 'sales_person') {
+        throw Exception('User is not a sales person: $salesPersonId');
       }
 
       await docRef.update({
@@ -296,12 +319,12 @@ class SalesPeopleManagementServices {
   /// for soft delete instead in most cases.
   /// 
   /// Parameters:
-  /// - [salesPersonId]: The salesPersonId of the person to permanently delete
+  /// - [salesPersonId]: The userId of the person to permanently delete
   /// 
   /// Throws [FirebaseException] if the delete operation fails.
   Future<void> permanentlyDeleteSalesPerson(String salesPersonId) async {
     try {
-      await salesPeopleRef.doc(salesPersonId).delete();
+      await usersRef.doc(salesPersonId).delete();
       print('Sales person permanently deleted: $salesPersonId');
     } on FirebaseException catch (e) {
       print('Firestore error permanently deleting sales person: ${e.message}');
@@ -317,13 +340,14 @@ class SalesPeopleManagementServices {
   /// Parameters:
   /// - [email]: The email address to search for
   /// 
-  /// Returns the SalesPersonModel if found, null otherwise.
+  /// Returns the UserModel if found, null otherwise.
   /// Throws [FirebaseException] if the query fails.
-  Future<SalesPersonModel?> getSalesPersonByEmail(String email) async {
+  Future<UserModel?> getSalesPersonByEmail(String email) async {
     try {
       final snapshot = await retryFirestore(
-        () => salesPeopleRef
+        () => usersRef
             .where('email', isEqualTo: email.toLowerCase())
+            .where('role', isEqualTo: 'sales_person')
             .where('isDisabled', isEqualTo: false)
             .limit(1)
             .get(),
@@ -334,7 +358,7 @@ class SalesPeopleManagementServices {
         return null;
       }
 
-      final salesPerson = SalesPersonModel.fromFirestore(
+      final salesPerson = UserModel.fromFirestore(
         snapshot.docs.first.data(),
         snapshot.docs.first.id,
       );
@@ -360,8 +384,8 @@ class SalesPeopleManagementServices {
   /// - [query]: The search query string
   /// - [includeDisabled]: Whether to include disabled sales people (default: false)
   /// 
-  /// Returns a list of matching SalesPersonModel objects.
-  Future<List<SalesPersonModel>> searchSalesPeople(
+  /// Returns a list of matching UserModel objects.
+  Future<List<UserModel>> searchSalesPeople(
     String query, {
     bool includeDisabled = false,
   }) async {
@@ -388,17 +412,23 @@ class SalesPeopleManagementServices {
   /// Restores a soft-deleted sales person by setting isDisabled to false.
   /// 
   /// Parameters:
-  /// - [salesPersonId]: The salesPersonId of the person to restore
+  /// - [salesPersonId]: The userId of the person to restore
   /// 
   /// Throws [FirebaseException] if the restore operation fails.
   /// Throws [Exception] if the sales person is not found.
   Future<void> restoreSalesPerson(String salesPersonId) async {
     try {
-      final docRef = salesPeopleRef.doc(salesPersonId);
+      final docRef = usersRef.doc(salesPersonId);
       final docSnap = await docRef.get();
 
       if (!docSnap.exists) {
         throw Exception('Sales person not found with ID: $salesPersonId');
+      }
+
+      // Verify it's a sales person
+      final data = docSnap.data()!;
+      if (data['role'] != 'sales_person') {
+        throw Exception('User is not a sales person: $salesPersonId');
       }
 
       await docRef.update({
@@ -417,6 +447,7 @@ class SalesPeopleManagementServices {
   }
 
   /// Resends the password setup email to a sales person.
+  /// Resends password setup email to an existing sales person.
   /// 
   /// This can be used if:
   /// - Initial account creation failed
@@ -424,24 +455,35 @@ class SalesPeopleManagementServices {
   /// - User needs to reset their password
   /// 
   /// Parameters:
-  /// - [salesPerson]: The SalesPersonModel to send email to
+  /// - [salesPerson]: The UserModel to send email to (must have role = salesPerson)
   /// 
   /// Throws [FirebaseFunctionsException] if the operation fails.
-  Future<void> resendPasswordSetupEmail(SalesPersonModel salesPerson) async {
+  Future<void> resendPasswordSetupEmail(UserModel salesPerson) async {
     try {
       if (salesPerson.email.isEmpty) {
         throw Exception('Sales person email is required');
       }
 
-      if (salesPerson.salesPersonId == null || salesPerson.salesPersonId!.isEmpty) {
+      if (salesPerson.userId == null || salesPerson.userId!.isEmpty) {
         throw Exception('Sales person ID is required');
       }
 
+      if (salesPerson.role != UserRole.salesPerson) {
+        throw Exception('User must have salesPerson role');
+      }
+
+      // Call the same cloud function - it will handle existing users
       final callable = FirebaseFunctions.instance.httpsCallable('createSalesPersonAccount');
       final result = await callable.call({
         'email': salesPerson.email,
         'name': salesPerson.name,
-        'salesPersonId': salesPerson.salesPersonId!,
+        'salesPersonId': salesPerson.userId!,
+        'refCode': salesPerson.refCode ?? '', // Pass existing refCode
+        'address': salesPerson.address,
+        'city': salesPerson.city,
+        'state': salesPerson.state,
+        'country': salesPerson.country,
+        'isResend': true, // Mark this as a resend operation
       });
 
       print('Password setup email sent: ${result.data}');

@@ -7,7 +7,7 @@ import 'package:trax_admin_portal/features/super_admin/sales_people_management/w
 import 'package:trax_admin_portal/features/super_admin/sales_people_management/widgets/sales_person_form_dialog.dart';
 import 'package:trax_admin_portal/helper/app_spacing.dart';
 import 'package:trax_admin_portal/helper/screen_size.dart';
-import 'package:trax_admin_portal/models/sales_person_model.dart';
+import 'package:trax_admin_portal/models/user_model.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/theme/app_font_weight.dart';
 import 'package:trax_admin_portal/widgets/dialogs/dialogs.dart';
@@ -166,7 +166,7 @@ class SalesPeopleManagementPage extends StatelessWidget {
   }
   
   /// Show edit sales person dialog
-  void _showEditSalesPersonDialog(BuildContext context, SalesPersonModel salesPerson) {
+  void _showEditSalesPersonDialog(BuildContext context, UserModel salesPerson) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -181,14 +181,14 @@ class SalesPeopleManagementPage extends StatelessWidget {
   }
   
   /// Show delete confirmation dialog
-  void _showDeleteConfirmation(BuildContext context, SalesPersonModel salesPerson) {
+  void _showDeleteConfirmation(BuildContext context, UserModel salesPerson) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
         return DeleteSalesPersonDialog(
           salesPerson: salesPerson,
           onConfirm: () async {
-            await controller.deleteSalesPerson(salesPerson.docId);
+            await controller.deleteSalesPerson(salesPerson.userId!);
           },
         );
       },
@@ -196,7 +196,7 @@ class SalesPeopleManagementPage extends StatelessWidget {
   }
   
   /// Show resend email confirmation dialog
-  void _showResendEmailConfirmation(BuildContext context, SalesPersonModel salesPerson) {
+  void _showResendEmailConfirmation(BuildContext context, UserModel salesPerson) {
     Dialogs.showConfirmationDialog(
       context,
       'Send a password setup email to ${salesPerson.name} (${salesPerson.email})?',

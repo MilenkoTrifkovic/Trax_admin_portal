@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:trax_admin_portal/models/sales_person_model.dart';
+import 'package:trax_admin_portal/models/user_model.dart';
+import 'package:trax_admin_portal/utils/enums/user_type.dart';
 import 'package:trax_admin_portal/theme/app_colors.dart';
 import 'package:trax_admin_portal/theme/app_font_weight.dart';
 import 'package:trax_admin_portal/theme/styled_app_text.dart';
@@ -16,14 +17,16 @@ import 'package:trax_admin_portal/widgets/dialogs/app_dialog.dart';
 /// 
 /// The dialog performs validation and only calls onSubmit callback if valid.
 /// The actual business logic (Firestore operations) is handled by the controller.
+/// 
+/// Note: Sales people are now stored in the 'users' collection with role = salesPerson
 class SalesPersonFormDialog extends StatefulWidget {
   /// Callback when form is submitted successfully.
-  /// Receives the SalesPersonModel to be created or updated.
-  final Future<void> Function(SalesPersonModel salesPerson) onSubmit;
+  /// Receives the UserModel (with role = salesPerson) to be created or updated.
+  final Future<void> Function(UserModel salesPerson) onSubmit;
   
   /// Optional: Existing sales person for edit mode.
   /// If null, dialog is in "add" mode.
-  final SalesPersonModel? salesPerson;
+  final UserModel? salesPerson;
 
   const SalesPersonFormDialog({
     super.key,
@@ -48,9 +51,6 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
   String? _selectedState;
   String? _selectedCountry;
   
-  // Toggle values
-  bool _isActive = true;
-  
   bool _isSubmitting = false;
   bool get _isEditMode => widget.salesPerson != null;
 
@@ -68,9 +68,6 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
     // Initialize dropdown values
     _selectedState = person?.state;
     _selectedCountry = person?.country ?? 'United States';
-    
-    // Initialize toggle values
-    _isActive = person?.isActive ?? true;
   }
 
   @override
@@ -104,11 +101,11 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
                   : _cityController.text.trim(),
               state: _selectedState,
               country: _selectedCountry,
-              isActive: _isActive,
             )
-          : SalesPersonModel(
+          : UserModel(
               name: _nameController.text.trim(),
               email: _emailController.text.trim(),
+              role: UserRole.salesPerson,
               address: _addressController.text.trim().isEmpty 
                   ? null 
                   : _addressController.text.trim(),
@@ -117,7 +114,6 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
                   : _cityController.text.trim(),
               state: _selectedState,
               country: _selectedCountry,
-              isActive: _isActive,
             );
 
       // Call the callback (controller handles the actual Firestore operation)
@@ -217,8 +213,8 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
                 if (value == null || value.trim().isEmpty) {
                   return 'Email is required';
                 }
-                // Basic email validation
-                final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                // Email validation that allows + character (e.g., user+tag@example.com)
+                final emailRegex = RegExp(r'^[\w\-\.+]+@([\w-]+\.)+[\w-]{2,}$');
                 if (!emailRegex.hasMatch(value.trim())) {
                   return 'Enter a valid email address';
                 }
@@ -265,11 +261,6 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
             
             const SizedBox(height: 24),
             
-            // Active Status Toggle
-            _buildActiveToggle(),
-            
-            const SizedBox(height: 8),
-            
             // Helper text
             AppText.styledBodySmall(
               context,
@@ -313,39 +304,6 @@ class _SalesPersonFormDialogState extends State<SalesPersonFormDialog> {
             backgroundColor: AppColors.primary,
           ),
         ],
-      ),
-    );
-  }
-
-  /// Build active status toggle
-  Widget _buildActiveToggle() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: SwitchListTile(
-        title: AppText.styledBodyMedium(
-          context,
-          'Active Status',
-          weight: AppFontWeight.medium,
-          color: AppColors.primary,
-        ),
-        subtitle: AppText.styledBodySmall(
-          context,
-          _isActive 
-              ? 'This sales person is currently active' 
-              : 'This sales person is currently inactive',
-          color: AppColors.textMuted,
-        ),
-        value: _isActive,
-        activeThumbColor: AppColors.success,
-        onChanged: (bool value) {
-          setState(() {
-            _isActive = value;
-          });
-        },
       ),
     );
   }

@@ -1,11 +1,13 @@
 import 'package:get/get.dart';
 import 'package:trax_admin_portal/controller/global_controllers/snackbar_message_controller.dart';
 import 'package:trax_admin_portal/features/super_admin/global_controllers/sales_people_global_controller.dart';
-import 'package:trax_admin_portal/models/sales_person_model.dart';
+import 'package:trax_admin_portal/models/user_model.dart';
 
 /// Local controller for managing sales people on the sales people management page.
 /// This controller uses the global SalesPeopleGlobalController for data operations
 /// and adds UI-specific logic and snackbar notifications.
+/// 
+/// Note: Sales people are now stored in the 'users' collection with role = salesPerson
 class SalesPeopleManagementController extends GetxController {
   final SalesPeopleGlobalController _globalController = Get.find<SalesPeopleGlobalController>();
   final SnackbarMessageController _snackbarController = Get.find<SnackbarMessageController>();
@@ -18,7 +20,7 @@ class SalesPeopleManagementController extends GetxController {
   bool get isLoading => _globalController.isLoading.value;
 
   /// Get sales people list from global controller
-  RxList<SalesPersonModel> get salesPeople => _globalController.salesPeople;
+  RxList<UserModel> get salesPeople => _globalController.salesPeople;
 
   // ═══════════════════════════════════════════════════════════════════════
   // Methods that delegate to global controller with UI feedback
@@ -30,7 +32,7 @@ class SalesPeopleManagementController extends GetxController {
   }
 
   /// Add a new sales person
-  Future<void> addSalesPerson(SalesPersonModel salesPerson) async {
+  Future<void> addSalesPerson(UserModel salesPerson) async {
     try {
       await _globalController.addSalesPerson(salesPerson);
       _snackbarController.showSuccessMessage('Sales person added successfully');
@@ -42,7 +44,7 @@ class SalesPeopleManagementController extends GetxController {
   }
 
   /// Update an existing sales person
-  Future<void> updateSalesPerson(SalesPersonModel salesPerson) async {
+  Future<void> updateSalesPerson(UserModel salesPerson) async {
     try {
       await _globalController.updateSalesPerson(salesPerson);
       _snackbarController.showSuccessMessage('Sales person updated successfully');
@@ -66,7 +68,7 @@ class SalesPeopleManagementController extends GetxController {
   }
 
   /// Resend password setup email to a sales person
-  Future<void> resendPasswordSetupEmail(SalesPersonModel salesPerson) async {
+  Future<void> resendPasswordSetupEmail(UserModel salesPerson) async {
     try {
       await _globalController.resendPasswordSetupEmail(salesPerson);
       _snackbarController.showSuccessMessage('Password setup email sent to ${salesPerson.email}');

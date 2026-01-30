@@ -189,7 +189,7 @@ class SignInController extends GetxController {
 
     // ✅ sales person routing (your cached value)
     final sp = _authController.salesPerson.value;
-    if (sp != null && sp.isActive && !sp.isDisabled) {
+    if (sp != null && !sp.isDisabled) {
       shouldNavigateToSalesPersonDashboard.value = true;
       return;
     }
